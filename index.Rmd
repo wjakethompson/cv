@@ -1,0 +1,266 @@
+---
+title: "Jake Thompson's CV"
+author: Jake Thompson
+date: "`r Sys.Date()`"
+output:
+  pagedown::html_resume:
+    css: ['css/styles.css', 'resume']
+    self_contained: false
+bibliography: ["bib/pubs.bib"]
+biblio-style: apa
+csl: csl/apa.csl
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  results = "asis", 
+  echo = FALSE
+)
+
+library(tidyverse)
+library(readxl)
+library(magick)
+library(glue)
+
+# Set this to true to have links turned into footnotes at the end of the document
+PDF_EXPORT <- FALSE
+
+# Holds all the links that were inserted for placement at the end
+links <- c()
+
+source('parsing_functions.R')
+source("parse-citations.R")
+```
+
+```{r}
+# When in export mode the little dots are unaligned, so fix that. 
+if(PDF_EXPORT){
+  cat("
+  <style>
+  :root{
+    --decorator-outer-offset-left: -6.5px;
+  }
+  </style>")
+}
+```
+
+
+# Aside
+
+```{r logo, warning = FALSE, message = FALSE, error = FALSE, out.width="100%"}
+logo <- image_read("https://github.com/wjakethompson/wjakethompson.com/raw/master/static/img/website-hex.png")
+ht <- image_info(logo) %>% pull(height)
+wd <- image_info(logo) %>% pull(width)
+scale <- 2
+
+image_blank(width = wd * scale, height = ht, "hotpink") %>%
+  image_composite(logo, offset = paste0("+", ((wd * scale) - wd) / 2, "+0")) %>%
+  image_transparent("hotpink", fuzz = 15)
+```
+
+```{r}
+# When in export mode the little dots are unaligned, so fix that. 
+if(PDF_EXPORT){
+  cat("View this CV online with links at _wjakethompson.com/cv_")
+} else {
+  cat("[<i class='fas fa-download'></i> Download a PDF of this CV](https://github.com/wjakethompson/cv/raw/master/thompson_cv.pdf)")
+}
+```
+
+## Contact {#contact}
+
+- <i class="fa fa-envelope"></i> wjakethompson@gmail.com
+- <i class="fa fa-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
+- <i class="fa fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
+- <i class="fa fa-link"></i> [wjakethompson.com](https://wjakethompson.com)
+- <i class="fa fa-phone"></i> (785) 643-9244
+
+
+## Skills {#skills}
+
+Highly experienced in
+
+- R 
+- R Markdown
+
+Experience with
+
+- Stan
+- SQL
+- C++
+
+
+## Disclaimer {#disclaimer}
+
+Last updated on `r Sys.Date()`
+
+
+# Main
+
+## W. Jake Thompson {#title}
+
+```{r}
+intro_text <- "I have made [visualizations viewed by hundreds of thousands of people](https://www.nytimes.com/interactive/2016/08/26/us/college-student-migration.html), [sped up query times for 25 terabytes of data by an average of 4,800 times](https://livefreeordichotomize.com/2019/06/04/using_awk_and_r_to_parse_25tb/), and built [packages for R](https://github.com/nstrayer/shinysense) that let you [do magic](http://nickstrayer.me/dataDayTexas/).
+
+Currently searching for a data science position that allows me to build tools using visualization and machine learning to help people explore and understand their data. 
+"
+
+cat(sanitize_links(intro_text))
+```
+
+
+## Education {data-icon=graduation-cap data-concise=true}
+
+```{r}
+edu_data <- read_xlsx("cv-data.xlsx", sheet = "education")
+
+edu_data %>% 
+    arrange(desc(end)) %>% 
+    mutate(id = 1:n()) %>% 
+    pivot_longer(
+      starts_with('description'),
+      names_to = 'description_num',
+      values_to = 'description',
+      values_drop_na = TRUE
+    ) %>% 
+    group_by(id) %>% 
+    mutate(
+      descriptions = list(description)
+    ) %>% 
+    ungroup() %>% 
+    filter(description_num == 'description_1') %>% 
+    mutate(
+      timeline = ifelse(
+        is.na(start) | start == end,
+        end,
+        glue('{end} - {start}')
+      ),
+      description_bullets = map_chr(descriptions, ~paste('-', ., collapse = '\n')),
+    ) %>% 
+    strip_links_from_cols(c('title', 'description_bullets')) %>% 
+    mutate_all(~ifelse(is.na(.), 'N/A', .)) %>% 
+    glue_data(
+      "### {title}",
+      "\n\n",
+      "{institution}",
+      "\n\n",
+      "{loc}",
+      "\n\n",
+      "{timeline}", 
+      "\n\n",
+      "{description_bullets}",
+      "\n\n\n",
+    )
+```
+
+
+## Employment {data-icon=suitcase}
+
+```{r}
+emp_data <- read_xlsx("cv-data.xlsx", sheet = "employment")
+
+emp_data %>%
+  replace_na(list(end = "present")) %>%
+  # mutate_at(vars(start, end), str_replace_all, pattern = "-[0-9]*$", "") %>%
+  nest(data = -c(org, institution, loc)) %>%
+  mutate(print_data = map(data, function(x) {
+    current <- filter(x, end == "present")
+    previous <- filter(x, end != "present")
+    
+    prev_positions <- previous %>%
+      select(title:end) %>%
+      separate(start, c("start_year", "start_month"), "-", convert = TRUE) %>%
+      separate(end, c("end_year", "end_month"), "-", convert = TRUE) %>%
+      mutate(start_month = month.name[start_month],
+             end_month = month.name[end_month],
+             label = glue("{title} ({start_month} {start_year} - {end_month} {end_year})")) %>%
+      pull(label) %>%
+      as.character() %>%
+      list()
+    
+    current %>%
+      pivot_longer(contains("description"), names_to = "description_num",
+                   values_to = "description") %>%
+      filter(!is.na(description)) %>%
+      group_by(title) %>%
+      mutate(descriptions = list(description)) %>%
+      ungroup() %>%
+      filter(description_num == "description_1") %>%
+      mutate(full_start = min(x$start)) %>%
+      separate(full_start, c("start_year", "start_month"), convert = TRUE) %>%
+      mutate(timeline = glue("{end} - {month.name[start_month]} {start_year}"),
+             timeline = as.character(timeline),
+             description_bullets = map_chr(descriptions, ~paste("-", .x, collapse = "\n")),
+             prev_pos = ifelse(nrow(previous) == 0, NA_character_,
+                               paste("**Position History**\n\n",
+                                     map_chr(prev_positions, ~paste("-", .x, collapse = "\n"))))) %>%
+      select(title, timeline, description_bullets, prev_pos)
+  })) %>%
+  select(-data) %>%
+  unnest(cols = c(print_data)) %>%
+  strip_links_from_cols(c("title", "description_bullets")) %>%
+  glue_data(
+    "### {org} {ifelse(is.na(institution), '', paste(',', institution))}",
+    "\n\n",
+    "{title}",
+    "\n\n",
+    "{loc}",
+    "\n\n",
+    "{timeline}",
+    "\n\n",
+    "{description_bullets}",
+    "\n\n",
+    "{ifelse(is.na(prev_pos), '', prev_pos)}",
+    "\n\n\n"
+  )
+```
+
+
+## Publications {data-icon=book}
+
+```{r}
+format_bib("bib/pubs.bib") %>%
+  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
+  separate(year, c("year", "month"), convert = TRUE) %>%
+  arrange(desc(year), desc(month), surnames) %>%
+  group_by(year) %>%
+  mutate(count = 1:n()) %>%
+  ungroup() %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+         full_authors = map_chr(author, all_authors, last_first = FALSE),
+         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  glue_data(
+    "### [{title}](https://doi.org/{doi})",
+    "\n\n",
+    "{paste0('*', ifelse(is.na(journal), booktitle, journal), ', ', volume, '*, ', pages)}",
+    "\n\n",
+    "N/A",
+    "\n\n",
+    "{year}",
+    "\n\n",
+    "- {full_authors}",
+    "\n\n\n"
+  )
+```
+
+
+
+```{r}
+if(PDF_EXPORT){
+  cat("
+  
+Links {data-icon=link}
+--------------------------------------------------------------------------------
+
+<br>
+
+
+")
+  
+  walk2(links, 1:length(links), function(link, index){
+    print(glue('{index}. {link}'))
+  })
+}
+```
+
+
