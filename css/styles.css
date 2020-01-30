@@ -1,5 +1,12 @@
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro|Source+Code+Pro|Oxygen");
 
+.pagedjs_page:not(:first-of-type) {
+  --sidebar-width: 3rem;
+  --sidebar-background-color: #ffffff;
+  --main-width: calc(var(--content-width) - var(--sidebar-width));
+  --decorator-horizontal-margin: 0.2in;
+}
+
 /* Main text is monserrat*/
 body {
   font-family: "Source Sans Pro", sans-serif;
@@ -42,7 +49,7 @@ sup {
 /* Customize some of the sizing variables */
 :root {
   --sidebar-width: 13rem; /* Shrink sidebar width  */
-  --sidebar-background-color: #F7F7F7; /* Make sidebar blue */
+  --sidebar-background-color: #F7F7F7; /* Make sidebar grey */
   --sidebar-horizontal-padding: 0.01in; /* Reduce sidebar padding */
   --decorator-outer-dim: 10px; /* Make position deliniating circles larger */
   --decorator-border: 2px solid #009FB7; /* Make timeline a blue as well*/
@@ -63,6 +70,33 @@ sup {
 /* Laptop icon isn't centered by default which is lame */
 .fa-laptop {
   margin-left: -3px;
+  margin-top: 2px;
+}
+.fa-users {
+  margin-left: -3px;
+}
+.fa-file-alt {
+  margin-left: 2px;
+  margin-top: 1px;
+}
+.fa-cube {
+  margin-top: 2px;
+}
+.fa-chalkboard-teacher {
+  margin-left: -2px;
+  margin-top: 2px;
+}
+.fa-award {
+  margin-left: 2px;
+  margin-top: 1px;
+}
+.fa-handshake {
+  margin-left: -2px;
+  margin-top: 1px;
+}
+
+.details li ul li {
+  margin-left: 20px;
 }
 
 /* Less line spaceing for skills section */
@@ -114,7 +148,7 @@ sup {
 }
 
 .aside .level2{
-  margin-top: 0.2in;
+  margin-top: 0.3in;
 }
 
 [data-id="disclaimer"] p {
