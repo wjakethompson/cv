@@ -39,11 +39,9 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
 ## Contact {#contact}
 
 - <i class="fa fa-envelope"></i> wjakethompson@gmail.com
-- <i class="fa fa-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
-- <i class="fa fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
 - <i class="fa fa-link"></i> [wjakethompson.com](https://wjakethompson.com)
-- <i class="fa fa-phone"></i> (785) 643-9244
-
+- <i class="fa fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
+- <i class="fa fa-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
 
 ## Skills {#skills}
 
