@@ -6,12 +6,9 @@ output:
   pagedown::html_resume:
     css: ['css/styles.css', 'resume']
     self_contained: false
-bibliography: ["bib/pubs.bib"]
-biblio-style: apa
-csl: csl/apa.csl
 ---
 
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   results = "asis", 
   echo = FALSE
@@ -22,26 +19,7 @@ library(readxl)
 library(magick)
 library(glue)
 
-# Set this to true to have links turned into footnotes at the end of the document
-PDF_EXPORT <- FALSE
-
-# Holds all the links that were inserted for placement at the end
-links <- c()
-
-source('parsing_functions.R')
 source("parse-citations.R")
-```
-
-```{r}
-# When in export mode the little dots are unaligned, so fix that. 
-if(PDF_EXPORT){
-  cat("
-  <style>
-  :root{
-    --decorator-outer-offset-left: -6.5px;
-  }
-  </style>")
-}
 ```
 
 
@@ -58,15 +36,6 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
   image_transparent("hotpink", fuzz = 15)
 ```
 
-```{r}
-# When in export mode the little dots are unaligned, so fix that. 
-if(PDF_EXPORT){
-  cat("View this CV online with links at _wjakethompson.com/cv_")
-} else {
-  cat("[<i class='fas fa-download'></i> Download a PDF of this CV](https://github.com/wjakethompson/cv/raw/master/thompson_cv.pdf)")
-}
-```
-
 ## Contact {#contact}
 
 - <i class="fa fa-envelope"></i> wjakethompson@gmail.com
@@ -78,19 +47,30 @@ if(PDF_EXPORT){
 
 ## Skills {#skills}
 
-Highly experienced in
+**Programming:** 
 
-- R 
+- R
 - R Markdown
-
-Experience with
-
 - Stan
-- SQL
-- C++
+
+**Psychometrics:**
+
+- Diagnostic Classification Models
+- Item Response Theory
+- Reliability
+- Differential Item Functioning
+- 
+
+**Data Analysis:**
+
+- Bayesian statistics
+- Generalized linear models
+- Multilevel models
 
 
 ## Disclaimer {#disclaimer}
+
+Made with the R package [**pagedown**](https://github.com/rstudio/pagedown).
 
 Last updated on `r Sys.Date()`
 
@@ -99,14 +79,8 @@ Last updated on `r Sys.Date()`
 
 ## W. Jake Thompson {#title}
 
-```{r}
-intro_text <- "I have made [visualizations viewed by hundreds of thousands of people](https://www.nytimes.com/interactive/2016/08/26/us/college-student-migration.html), [sped up query times for 25 terabytes of data by an average of 4,800 times](https://livefreeordichotomize.com/2019/06/04/using_awk_and_r_to_parse_25tb/), and built [packages for R](https://github.com/nstrayer/shinysense) that let you [do magic](http://nickstrayer.me/dataDayTexas/).
+### Psychometrician & R Developer
 
-Currently searching for a data science position that allows me to build tools using visualization and machine learning to help people explore and understand their data. 
-"
-
-cat(sanitize_links(intro_text))
-```
 
 
 ## Education {data-icon=graduation-cap data-concise=true}
@@ -137,7 +111,6 @@ edu_data %>%
       ),
       description_bullets = map_chr(descriptions, ~paste('-', ., collapse = '\n')),
     ) %>% 
-    strip_links_from_cols(c('title', 'description_bullets')) %>% 
     mutate_all(~ifelse(is.na(.), 'N/A', .)) %>% 
     glue_data(
       "### {title}",
@@ -167,14 +140,19 @@ emp_data %>%
     current <- filter(x, end == "present")
     previous <- filter(x, end != "present")
     
-    prev_positions <- previous %>%
+    prev_positions <- x %>%
       select(title:end) %>%
       separate(start, c("start_year", "start_month"), "-", convert = TRUE) %>%
-      separate(end, c("end_year", "end_month"), "-", convert = TRUE) %>%
+      separate(end, c("end_year", "end_month"), "-", convert = TRUE,
+               fill = "right") %>%
       mutate(start_month = month.name[start_month],
-             end_month = month.name[end_month],
-             label = glue("{title} ({start_month} {start_year} - {end_month} {end_year})")) %>%
+             end_month = map_chr(end_month, function(x) {
+               if (is.na(x)) return(NA_character_)
+               month.name[x]
+             }),
+             label = glue("{title} ({start_month} {start_year}--{end_month} {end_year})")) %>%
       pull(label) %>%
+      str_replace_all("NA ", "") %>%
       as.character() %>%
       list()
     
@@ -198,9 +176,8 @@ emp_data %>%
   })) %>%
   select(-data) %>%
   unnest(cols = c(print_data)) %>%
-  strip_links_from_cols(c("title", "description_bullets")) %>%
   glue_data(
-    "### {org} {ifelse(is.na(institution), '', paste(',', institution))}",
+    "### {org}{ifelse(is.na(institution), '', paste(',', institution))}",
     "\n\n",
     "{title}",
     "\n\n",
@@ -230,37 +207,193 @@ format_bib("bib/pubs.bib") %>%
          full_authors = map_chr(author, all_authors, last_first = FALSE),
          full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
   glue_data(
-    "### [{title}](https://doi.org/{doi})",
+    "### {title}",
     "\n\n",
-    "{paste0('*', ifelse(is.na(journal), booktitle, journal), ', ', volume, '*, ', pages)}",
+    "{citation}",
     "\n\n",
     "N/A",
     "\n\n",
     "{year}",
-    "\n\n",
-    "- {full_authors}",
     "\n\n\n"
   )
 ```
 
-
+## Conference Presentations {data-icon=users}
 
 ```{r}
-if(PDF_EXPORT){
-  cat("
-  
-Links {data-icon=link}
---------------------------------------------------------------------------------
-
-<br>
-
-
-")
-  
-  walk2(links, 1:length(links), function(link, index){
-    print(glue('{index}. {link}'))
-  })
-}
+format_bib("bib/conf.bib") %>%
+  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
+  separate(year, c("year", "month"), convert = TRUE) %>%
+  arrange(desc(year), desc(month), surnames) %>%
+  group_by(year) %>%
+  mutate(count = 1:n()) %>%
+  ungroup() %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+         full_authors = map_chr(author, all_authors, last_first = FALSE),
+         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  glue_data(
+    "### {title}",
+    "\n\n",
+    "{citation}",
+    "\n\n",
+    "N/A",
+    "\n\n",
+    "{year}",
+    "\n\n\n"
+  )
 ```
 
+## Technical Reports {data-icon=file-alt}
 
+```{r}
+format_bib("bib/tech.bib") %>%
+  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
+  separate(year, c("year", "month"), convert = TRUE) %>%
+  arrange(desc(year), desc(month), surnames) %>%
+  group_by(year) %>%
+  mutate(count = 1:n()) %>%
+  ungroup() %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+         full_authors = map_chr(author, all_authors, last_first = FALSE),
+         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  glue_data(
+    "### {title}",
+    "\n\n",
+    "{citation}",
+    "\n\n",
+    "N/A",
+    "\n\n",
+    "{year}",
+    "\n\n\n"
+  )
+```
+
+## R Packages {data-icon=cube}
+
+```{r}
+if (!file.exists("bib/rpkg.bib")) file.create("bib/rpkg.bib")
+suppressWarnings(
+  knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
+                   file = "bib/rpkg.bib")
+)
+
+format_bib("bib/rpkg.bib") %>%
+  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
+  separate(year, c("year", "month"), convert = TRUE, fill = "right") %>%
+  arrange(desc(year), desc(month), surnames) %>%
+  group_by(year) %>%
+  mutate(count = 1:n()) %>%
+  ungroup() %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+         full_authors = map_chr(author, all_authors, last_first = FALSE),
+         full_authors = str_replace_all(full_authors, "W. J. Thompson",
+                                        "**W. J. Thompson**"),
+         title = map_chr(title, format_pkg_title)) %>%
+  glue_data(
+    "### {title}",
+    "\n\n",
+    "{citation}",
+    "\n\n",
+    "N/A",
+    "\n\n",
+    "{year}",
+    "\n\n\n"
+  )
+```
+
+## Tutorials and Workshops {data-icon=chalkboard-teacher}
+
+```{r}
+format_bib("bib/work.bib") %>%
+  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
+  separate(year, c("year", "month"), convert = TRUE, fill = "right") %>%
+  arrange(desc(year), desc(month), surnames) %>%
+  group_by(year) %>%
+  mutate(count = 1:n()) %>%
+  ungroup() %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+         full_authors = map_chr(author, all_authors, last_first = FALSE),
+         full_authors = str_replace_all(full_authors, "W. J. Thompson",
+                                        "**W. J. Thompson**")) %>%
+  glue_data(
+    "### {title}",
+    "\n\n",
+    "{citation}",
+    "\n\n",
+    "N/A",
+    "\n\n",
+    "{year}",
+    "\n\n\n"
+  )
+```
+
+## Awards {data-icon=award}
+
+```{r}
+awd_data <- read_xlsx("cv-data.xlsx", sheet = "awards")
+gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants")
+
+awards <- awd_data %>%
+  filter(display) %>%
+  mutate(date = case_when(is.na(end_date) ~ as.character(start_date),
+                          TRUE ~ paste0(start_date, "--", end_date)),
+         display_text = glue("- {award} ({date})"),
+         status = "Professional Awards") %>%
+  group_by(status) %>%
+  summarize(bullets = paste(display_text, collapse = "\n"))
+
+grants <- gnt_data %>%
+  mutate(display_text = glue("- **{role}:** *{title}* ({start}--{end}). {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
+  arrange(desc(start)) %>%
+  group_by(status) %>%
+  summarize(bullets = paste(display_text, collapse = "\n"))
+
+
+bind_rows(grants, awards) %>%
+  mutate(status = factor(status,
+                         levels = c("Currently Funded",
+                                    "Under Review",
+                                    "Previously Funded",
+                                    "Unfunded",
+                                    "Professional Awards"),
+                         labels = c("Currently Funded Grants",
+                                    "Grants Under Review",
+                                    "Previously Funded Grants",
+                                    "Unfunded Grants",
+                                    "Professional Awards"))) %>%
+  arrange(status) %>%
+  glue_data(
+    "### {status}",
+    "\n\n",
+    "{bullets}",
+    "\n\n",
+    "N/A",
+    "\n\n\n"
+  )
+
+```
+
+## Service {data-icon=handshake}
+
+### Professional Affiliations
+
+- American Educational Research Association (2015--present)
+    - Division D: Measurement and Research Methodology
+    - SIG: Cognition and Assessment
+- American Statistical Association (2019--present)
+    - Sections: Bayesian Statistical Science, Statistical Computing, Statistics in Sports
+-  National Council on Measurement in Education (2015--present)
+    - Student Representative, Diversity and Testing Committee (2015)
+
+N/A
+
+
+### Reviewer
+
+- Behaviormetrika (2019--present)
+- International Journal of Research in Education and Science (2019--present)
+- Journal of Open Source Software (2019--present)
+- National Council on Measurement in Education annual meeting (2019--present)
+- American Educational Research Association, Division H, Outstanding Publications (2019)
+
+N/A
