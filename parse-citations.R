@@ -1,4 +1,4 @@
-bib <- "bib/conf.bib"
+bib <- "bib/pubs.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -12,16 +12,20 @@ format_author <- function(author, last_first = TRUE) {
   parts <- stringr::str_split(author, " ") %>%
     purrr::flatten_chr()
   
-  last <- parts[length(parts)]
-  first <- parts[-length(parts)] %>%
-    purrr::map_chr(function(x) {paste0(stringr::str_sub(x, 1, 1), ".")}) %>%
-    paste(collapse = " ")
-  
   if (last_first) {
-    paste0(last, ", ", first)
+    last <- parts[1] %>%
+      stringr::str_replace(",$", "")
+    first <- parts[-1] %>%
+      purrr::map_chr(function(x) {paste0(stringr::str_sub(x, 1, 1), ".")}) %>%
+      paste(collapse = " ")
   } else {
-    paste0(first, " ", last)
+    last <- parts[length(parts)]
+    first <- parts[-length(parts)] %>%
+      purrr::map_chr(function(x) {paste0(stringr::str_sub(x, 1, 1), ".")}) %>%
+      paste(collapse = " ")
   }
+  
+  paste0(last, ", ", first)
 }
 
 format_pkg_title <- function(title) {
@@ -45,94 +49,148 @@ format_pkg_title <- function(title) {
 
 cite_article <- function(ref_info) {
   authors <- ref_info %>%
-    pull(author) %>%
+    dplyr::pull(author) %>%
+    purrr::flatten_chr() %>%
     all_authors()
   
   ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({stringr::str_replace_all(year, '-[0-9]*$', '')}). {title}. *{journal}, {volume}*, {pages}. doi:{doi}"
+      "{full_author} ({year}). {title}. *{journal}, {volume}*, {pages}. https://doi.org/{doi}"
     )
 }
 
 cite_incollection <- function(ref_info) {
   authors <- ref_info %>%
     dplyr::pull(author) %>%
+    purrr::flatten_chr() %>%
     all_authors()
   
   ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
-    dplyr::mutate_all(~stringr::str_replace_all(.x, "\\{|\\}", "")) %>%
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({stringr::str_replace_all(year, '-[0-9]*$', '')}). {title}. In {editor} (Ed.) *{booktitle}* (pp. {pages}). {address}: {publisher}. doi:{doi}"
+      "{full_author} ({year}). {title}. In {editor} (Ed.) *{booktitle}* (pp. {pages}). {publisher}. https://doi.org/{doi}"
     )
 }
 
-cite_inproceedings <- function(ref_info) {
+cite_thesis <- function(ref_info) {
   authors <- ref_info %>%
     dplyr::pull(author) %>%
+    purrr::flatten_chr() %>%
     all_authors()
   
+  ref_info %>%
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
+    glue::glue_data(
+      "{full_author} ({year}). {title} ({type} No. {number}) [{titleaddon}]. {publisher}."
+    )
+}
+
+cite_presentation <- function(ref_info) {
+  authors <- ref_info %>%
+    dplyr::pull(author) %>%
+    purrr::flatten_chr() %>%
+    all_authors()
+  
+  dates <- ref_info %>%
+    dplyr::pull(eventdate) %>%
+    stringr::str_split("/") %>%
+    purrr::flatten_chr() %>%
+    lubridate::ymd()
+  
+  if (length(dates) == 1) {
+    print_date <- glue::glue("{lubridate::year(dates)}, ",
+                             "{lubridate::month(dates, label = TRUE, abbr = FALSE)} ",
+                             "{lubridate::day(dates)}")
+  } else {
+    if (lubridate::month(dates[1]) == lubridate::month(dates[2])) {
+      print_date <- glue::glue("{lubridate::year(dates[1])}, ",
+                               "{lubridate::month(dates[1], label = TRUE, abbr = FALSE)} ",
+                               "{lubridate::day(dates[1])}--{lubridate::day(dates[2])}")
+    } else {
+      print_date <- glue::glue("{lubridate::year(dates[1])}, ",
+                               "{lubridate::month(dates[1], label = TRUE, abbr = FALSE)} ",
+                               "{lubridate::day(dates[1])}--",
+                               "{lubridate::month(dates[2], label = TRUE, abbr = FALSE)} ",
+                               "{lubridate::day(dates[2])}")
+    }
+  }
+  
   cite_info <- ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
-    dplyr::mutate_all(~stringr::str_replace_all(.x, "\\{|\\}", "")) %>%
-    tidyr::separate(year, c("year", "month"), convert = TRUE) %>%
-    dplyr::mutate(month = month.name[month])
-    
-  if (is.na(cite_info$booktitle))  {
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", "")),
+                  full_date = print_date)
+
+  if (is.na(cite_info$maintitle))  {
     cite <- cite_info %>%
       glue::glue_data(
-        "{full_author} ({year}, {month}). *{title}*. {eventtitle}, {location}."
+        "{full_author} ({full_date}). *{title}* [{titleaddon}]. {eventtitle}, {venue}."
       )
   } else {
     cite <- cite_info %>%
       glue::glue_data(
-        "{full_author} ({year}, {month}). {title}. In {editora} ({ratlas::rat_cap_words(editoratype)}), *{booktitle}*. {eventtitle}, {location}."
+        "{full_author} ({full_date}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. In {editora} ({ratlas::rat_cap_words(editoratype)}), *{maintitle}* [{maintitleaddon}]. {eventtitle}, {venue}."
       )
+  }
+  
+  if (!is.na(cite_info$url)) {
+    cite <- glue::glue("{cite} {cite_info$url}")
+  }
+  
+  if (("addendum" %in% colnames(cite_info)) && !is.na(cite_info$addendum)) {
+    cite <- glue::glue("{cite} {cite_info$addendum}")
   }
   
   cite
 }
 
-cite_techreport <- function(ref_info) {
+cite_report <- function(ref_info) {
   authors <- ref_info %>%
     dplyr::pull(author) %>%
+    purrr::flatten_chr() %>%
     all_authors()
   
-  ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
-    dplyr::mutate_all(~stringr::str_replace_all(.x, "\\{|\\}", "")) %>%
-    glue::glue_data(
-      "{full_author} ({stringr::str_replace_all(year, '-[0-9]*$', '')}). *{title}*. ({type} No. {number}). {location}: {publisher}."
-    )
-}
-
-cite_proceedings <- function(ref_info) {
-  authors <- ref_info %>%
-    dplyr::pull(author) %>%
-    all_authors()
+  cite_info <- ref_info %>%
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", "")),
+                  full_title = case_when(is.na(subtitle) ~ title,
+                                         TRUE ~ paste0(title, ": ", subtitle)))
   
-  ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
-    dplyr::mutate_all(~stringr::str_replace_all(.x, "\\{|\\}", "")) %>%
-    tidyr::separate(year, c("year", "month"), convert = TRUE) %>%
-    dplyr::mutate(month = month.name[month]) %>%
+  cite <- cite_info %>%
     glue::glue_data(
-      "{full_author} ({year}, {month}). *{title}*. {eventtitle}, {location}. {ifelse(is.na(url), '', url)}"
+      "{full_author} ({year}). *{full_title}*. ({type} No. {number}). {publisher}."
     )
+  
+  if (!is.na(cite_info$doi)) {
+    cite <- glue::glue("{cite} https://doi.org/{cite_info$doi}")
+  } else if (!is.na(cite_info$url)) {
+    cite <- glue::glue("{cite} {cite_info$url}")
+  }
+  
+  return(cite)
 }
 
 cite_manual <- function(ref_info) {
   authors <- ref_info %>%
     dplyr::pull(author) %>%
-    all_authors()
+    purrr::flatten_chr() %>%
+    all_authors(last_first = FALSE)
   
   ref_info %>%
-    dplyr::mutate(full_author = authors) %>%
-    dplyr::mutate_all(~stringr::str_replace_all(.x, "\\{|\\}", "")) %>%
+    dplyr::mutate(full_author = authors,
+                  across(where(is.character),
+                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     dplyr::mutate(title = purrr::map_chr(title, format_pkg_title)) %>%
     glue::glue_data(
-      "{full_author} ({stringr::str_replace_all(year, '-[0-9]*$', '')}). *{title}*. {note}. {ifelse(is.na(url), '', url)}"
+      "{full_author} ({year}). *{title}*. {note}. {ifelse(is.na(url), '', url)}"
     )
 }
 
@@ -143,10 +201,11 @@ format_citation <- function(type, ref_info) {
 }
 
 format_bib <- function(bib, emphasize = "Thompson, W. J.") {
-  all_bib <- vitae::bibliography_entries(bib) %>%
-    tibble::as_tibble() %>%
-    tidyr::nest(info = -c(key, bibtype)) %>%
-    dplyr::mutate(citation = purrr::map2_chr(bibtype, info, format_citation),
+  all_bib <- bib2df::bib2df(bib) %>%
+    janitor::clean_names() %>%
+    dplyr::mutate(category = stringr::str_to_lower(category)) %>%
+    tidyr::nest(info = -c(bibtexkey, category)) %>%
+    dplyr::mutate(citation = purrr::map2_chr(category, info, format_citation),
                   citation = stringr::str_replace_all(citation, emphasize, glue::glue("**{emphasize}**"))) %>%
     tidyr::unnest(cols = c(info))
   

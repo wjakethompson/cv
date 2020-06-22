@@ -11,7 +11,9 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   results = "asis", 
-  echo = FALSE
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
 )
 
 library(tidyverse)
@@ -83,7 +85,7 @@ Last updated on `r Sys.Date()`
 
 ## Education {data-icon=graduation-cap data-concise=true}
 
-```{r}
+```{r print-edu}
 edu_data <- read_xlsx("cv-data.xlsx", sheet = "education")
 
 edu_data %>% 
@@ -127,7 +129,7 @@ edu_data %>%
 
 ## Employment {data-icon=suitcase}
 
-```{r}
+```{r print-emp}
 emp_data <- read_xlsx("cv-data.xlsx", sheet = "employment")
 
 emp_data %>%
@@ -193,17 +195,17 @@ emp_data %>%
 
 ## Publications {data-icon=book}
 
-```{r}
+```{r print-pub}
 format_bib("bib/pubs.bib") %>%
-  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
-  separate(year, c("year", "month"), convert = TRUE) %>%
-  arrange(desc(year), desc(month), surnames) %>%
+  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
+         author = map_chr(author, all_authors),
+         year = as.integer(year),
+         month = as.integer(month)) %>%
+  arrange(desc(year), desc(month), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         full_authors = map_chr(author, all_authors, last_first = FALSE),
-         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
   glue_data(
     "### {title}",
     "\n\n",
@@ -218,17 +220,18 @@ format_bib("bib/pubs.bib") %>%
 
 ## Conference Presentations {data-icon=users}
 
-```{r}
+```{r print-conf}
 format_bib("bib/conf.bib") %>%
-  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
-  separate(year, c("year", "month"), convert = TRUE) %>%
-  arrange(desc(year), desc(month), surnames) %>%
+  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
+         author = map_chr(author, all_authors),
+         year = as.integer(year),
+         month = as.integer(month)) %>%
+  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
+  arrange(desc(year), desc(month), desc(day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         full_authors = map_chr(author, all_authors, last_first = FALSE),
-         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
   glue_data(
     "### {title}",
     "\n\n",
@@ -243,17 +246,17 @@ format_bib("bib/conf.bib") %>%
 
 ## Technical Reports {data-icon=file-alt}
 
-```{r}
+```{r print-tech}
 format_bib("bib/tech.bib") %>%
-  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
-  separate(year, c("year", "month"), convert = TRUE) %>%
-  arrange(desc(year), desc(month), surnames) %>%
+  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
+         author = map_chr(author, all_authors),
+         year = as.integer(year),
+         month = as.integer(month)) %>%
+  arrange(desc(year), desc(month), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         full_authors = map_chr(author, all_authors, last_first = FALSE),
-         full_authors = str_replace_all(full_authors, "W. J. Thompson", "**W. J. Thompson**")) %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
   glue_data(
     "### {title}",
     "\n\n",
@@ -268,7 +271,7 @@ format_bib("bib/tech.bib") %>%
 
 ## R Packages {data-icon=cube}
 
-```{r}
+```{r print-rpkg}
 if (!file.exists("bib/rpkg.bib")) file.create("bib/rpkg.bib")
 suppressWarnings(
   knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
@@ -276,16 +279,14 @@ suppressWarnings(
 )
 
 format_bib("bib/rpkg.bib") %>%
-  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
-  separate(year, c("year", "month"), convert = TRUE, fill = "right") %>%
-  arrange(desc(year), desc(month), surnames) %>%
+  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
+         author = map_chr(author, all_authors),
+         year = as.integer(year)) %>%
+  arrange(desc(year), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
   mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         full_authors = map_chr(author, all_authors, last_first = FALSE),
-         full_authors = str_replace_all(full_authors, "W. J. Thompson",
-                                        "**W. J. Thompson**"),
          title = map_chr(title, format_pkg_title)) %>%
   glue_data(
     "### {title}",
@@ -301,18 +302,18 @@ format_bib("bib/rpkg.bib") %>%
 
 ## Tutorials and Workshops {data-icon=chalkboard-teacher}
 
-```{r}
+```{r print-work}
 format_bib("bib/work.bib") %>%
-  mutate_all(~str_replace_all(.x, "\\{|\\}", "")) %>%
-  separate(year, c("year", "month"), convert = TRUE, fill = "right") %>%
-  arrange(desc(year), desc(month), surnames) %>%
+  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
+         author = map_chr(author, all_authors),
+         year = as.integer(year),
+         month = as.integer(month)) %>%
+  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
+  arrange(desc(year), desc(month), desc(day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         full_authors = map_chr(author, all_authors, last_first = FALSE),
-         full_authors = str_replace_all(full_authors, "W. J. Thompson",
-                                        "**W. J. Thompson**")) %>%
+  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
   glue_data(
     "### {title}",
     "\n\n",
