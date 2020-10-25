@@ -184,13 +184,35 @@ cite_manual <- function(ref_info) {
     purrr::flatten_chr() %>%
     all_authors(last_first = FALSE)
   
-  ref_info %>%
+  url_present <- "url" %in% colnames(ref_info)
+  
+  new_info <- ref_info %>%
     dplyr::mutate(full_author = authors,
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
-    dplyr::mutate(title = purrr::map_chr(title, format_pkg_title)) %>%
+    dplyr::mutate(title = purrr::map_chr(title, format_pkg_title))
+    
+  if (!url_present) {
+    new_info <- add_column(new_info, url = NA_character_)
+  }
+  
+  new_info %>%
+    select(full_author, year, title, note, url) %>%
+    mutate(url = case_when(str_detect(note, "https") ~ note,
+                           TRUE ~ url),
+           note = case_when(!is.na(url) & !str_detect(url, "CRAN") ~ NA_character_,
+                            is.na(url) ~ NA_character_,
+                            TRUE ~ note),
+           url = map_chr(url,
+                         function(u) {
+                           if (is.na(u) | !str_detect(u, ",")) return(u)
+                           
+                           str_split(u, ",") %>%
+                             flatten_chr() %>%
+                             str_subset("github.com", negate = TRUE)
+                         })) %>%
     glue::glue_data(
-      "{full_author} ({year}). *{title}*. {note}. {ifelse(is.na(url), '', url)}"
+      "{full_author} ({year}). *{title}*. {ifelse(is.na(note), '', paste0(note, '.'))} {ifelse(is.na(url), '', url)}"
     )
 }
 
