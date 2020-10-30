@@ -47,6 +47,11 @@ format_pkg_title <- function(title) {
     dplyr::pull(title)
 }
 
+combine_eds <- function(editor) {
+  knitr::combine_words(editor) %>%
+    stringr::str_replace_all(" and ", " & ")
+}
+
 cite_article <- function(ref_info) {
   authors <- ref_info %>%
     dplyr::pull(author) %>%
@@ -68,12 +73,21 @@ cite_incollection <- function(ref_info) {
     purrr::flatten_chr() %>%
     all_authors()
   
+  editors <- ref_info %>%
+    dplyr::pull(editor) %>%
+    purrr::flatten_chr()
+  
   ref_info %>%
     dplyr::mutate(full_author = authors,
+                  full_editor = case_when(length(editors) > 1 ~ paste0("In ", combine_eds(editors), " (Eds.) "),
+                                          is.na(editors) ~ "",
+                                          TRUE ~ paste0("In ", editors, " (Ed.) ")),
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
+    dplyr::select(full_author, year, title, full_editor, booktitle, pages,
+                  publisher, doi) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}. In {editor} (Ed.) *{booktitle}* (pp. {pages}). {publisher}. https://doi.org/{doi}"
+      "{full_author} ({year}). {title}. {full_editor}*{booktitle}* (pp. {pages}). {publisher}. https://doi.org/{doi}"
     )
 }
 
