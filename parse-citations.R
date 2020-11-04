@@ -102,7 +102,7 @@ cite_thesis <- function(ref_info) {
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title} ({type} No. {number}) [{titleaddon}]. {publisher}."
+      "{full_author} ({year}). *{title}*{ifelse(is.na(type), '', paste0(' (', type, ' No. ', number, ')'))} [{titleaddon}]. {publisher}.{ifelse(is.na(doi), '', paste0(' https://doi.org/', doi))}"
     )
 }
 
