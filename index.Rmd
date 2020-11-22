@@ -27,7 +27,7 @@ source("parse-citations.R")
 # Aside
 
 ```{r logo, warning = FALSE, message = FALSE, error = FALSE, out.width="100%"}
-logo <- image_read("https://github.com/wjakethompson/wjakethompson.com/raw/main/static/img/website-hex.png")
+logo <- image_read("https://github.com/wjakethompson/wjakethompson.com/raw/main/static/img/logo/wjakethompson.png")
 ht <- image_info(logo) %>% pull(height)
 wd <- image_info(logo) %>% pull(width)
 scale <- 2
