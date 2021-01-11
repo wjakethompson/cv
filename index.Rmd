@@ -20,6 +20,8 @@ library(tidyverse)
 library(readxl)
 library(magick)
 library(glue)
+library(janitor)
+library(bib2df)
 
 source("parse-citations.R")
 ```
