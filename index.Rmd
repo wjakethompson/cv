@@ -268,10 +268,10 @@ format_bib("bib/tech.bib") %>%
 
 ```{r print-rpkg}
 if (!file.exists("bib/rpkg.bib")) file.create("bib/rpkg.bib")
-suppressWarnings(
-  knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
-                   file = "bib/rpkg.bib", tweak = TRUE, width = 2000)
-)
+# suppressWarnings(
+#   knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
+#                    file = "bib/rpkg.bib", tweak = TRUE, width = 2000)
+# )
 
 format_bib("bib/rpkg.bib") %>%
   mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
@@ -368,6 +368,13 @@ bind_rows(grants, awards) %>%
 ```
 
 ## Service {data-icon="handshake"}
+
+### Institutional Service
+
+- University of Kansas
+    - Research Technology working group (2021)
+
+N/A
 
 ### Professional Affiliations
 
