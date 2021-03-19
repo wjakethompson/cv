@@ -186,7 +186,7 @@ cite_report <- function(ref_info) {
   if (!is.na(cite_info$doi)) {
     cite <- glue::glue("{cite} https://doi.org/{cite_info$doi}")
   } else if (!is.na(cite_info$url)) {
-    cite <- glue::glue("{cite} {cite_info$url}")
+    cite <- glue::glue("{cite} [<a href={cite_info$url}>PDF</a>]")
   }
   
   return(cite)
