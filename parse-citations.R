@@ -180,7 +180,7 @@ cite_report <- function(ref_info) {
   
   cite <- cite_info %>%
     glue::glue_data(
-      "{full_author} ({year}). *{full_title}*. ({type} No. {number}). {publisher}."
+      "{full_author} ({year}). *{full_title}* ({type} No. {number}). {publisher}."
     )
   
   if (!is.na(cite_info$doi)) {
