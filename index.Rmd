@@ -26,6 +26,15 @@ library(bib2df)
 source("parse-citations.R")
 ```
 
+```{css, echo=FALSE}
+.pagedjs_page:not(:first-of-type) {
+  --sidebar-width: 0rem;
+  --sidebar-background-color: #ffffff;
+  --main-width: calc(var(--content-width) - var(--sidebar-width));
+  --decorator-horizontal-margin: 0.2in;
+}
+```
+
 # Aside
 
 ```{r logo, warning = FALSE, message = FALSE, error = FALSE, out.width="100%"}
