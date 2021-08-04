@@ -230,8 +230,9 @@ format_bib("bib/conf.bib") %>%
          author = map_chr(author, all_authors),
          year = as.integer(year),
          month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
-  arrange(desc(year), desc(month), desc(day), author) %>%
+  separate(eventdate, c("year", "month", "day", NA, NA, "end_day"),
+           fill = "right", extra = "drop", convert = TRUE) %>%
+  arrange(desc(year), desc(month), desc(day), desc(end_day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
