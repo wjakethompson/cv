@@ -38,7 +38,10 @@ format_pkg_title <- function(title) {
                                                    "University of Kansas"),
                   title = stringr::str_replace_all(title,
                                                    "dynamic learning maps",
-                                                   "Dynamic Learning Maps")) %>%
+                                                   "Dynamic Learning Maps"),
+                  title = stringr::str_replace_all(title,
+                                                   "taylor swift",
+                                                   "Taylor Swift")) %>%
     tidyr::separate(title, c("part1", "part2"), sep = ": ", fill = "right",
                     extra = "merge") %>%
     dplyr::mutate(part2 = paste0(stringr::str_to_upper(stringr::str_sub(part2, 1L, 1L)),
