@@ -148,17 +148,21 @@ cite_presentation <- function(ref_info) {
   if (is.na(cite_info$maintitle))  {
     cite <- cite_info %>%
       glue::glue_data(
-        "{full_author} ({full_date}). *{title}* [{titleaddon}]. {eventtitle}, {venue}."
+        "{full_author} ({full_date}). *{title}{ifelse(is.na(subtitle), '', paste0(': ', subtitle))}* [{titleaddon}]. {eventtitle}, {venue}."
       )
   } else {
     cite <- cite_info %>%
       glue::glue_data(
-        "{full_author} ({full_date}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. In {editora} ({ratlas::rat_cap_words(editoratype)}), *{maintitle}* [{maintitleaddon}]. {eventtitle}, {venue}."
+        "{full_author} ({full_date}). {title}{ifelse(is.na(subtitle), '', paste0(': ', subtitle))}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. In {editora} ({ratlas::rat_cap_words(editoratype)}), *{maintitle}* [{maintitleaddon}]. {eventtitle}, {venue}."
       )
   }
   
   if (!is.na(cite_info$url)) {
-    cite <- glue::glue("{cite} {cite_info$url}")
+    final_url <- ifelse(stringr::str_detect(cite_info$url, "\\.pdf"),
+                        glue("[<a href={cite_info$url}>PDF</a>]"),
+                        glue("{cite_info$url}"))
+    
+    cite <- glue::glue("{cite} {final_url}")
   }
   
   if (("addendum" %in% colnames(cite_info)) && !is.na(cite_info$addendum)) {
