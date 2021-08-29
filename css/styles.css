@@ -25,6 +25,13 @@ h4 {
   margin: 0;
 }
 
+[data-id="title"] h1 {
+    font-weight: 300;
+    font-size: 1.8rem;
+    line-height: 1.5;
+    text-transform: none;
+}
+
 a {
   color: #009FB7;
 }
