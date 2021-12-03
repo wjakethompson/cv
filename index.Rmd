@@ -216,17 +216,15 @@ format_bib("bib/pubs.bib") %>%
   )
 ```
 
-## Conference Presentations {data-icon="users"}
+## Technical Reports {data-icon="file-alt"}
 
-```{r print-conf}
-format_bib("bib/conf.bib") %>%
+```{r print-tech}
+format_bib("bib/tech.bib") %>%
   mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
          author = map_chr(author, all_authors),
          year = as.integer(year),
          month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day", NA, NA, "end_day"),
-           fill = "right", extra = "drop", convert = TRUE) %>%
-  arrange(desc(year), desc(month), desc(day), desc(end_day), author) %>%
+  arrange(desc(year), desc(month), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
@@ -243,15 +241,17 @@ format_bib("bib/conf.bib") %>%
   )
 ```
 
-## Technical Reports {data-icon="file-alt"}
+## Conference Presentations {data-icon="users"}
 
-```{r print-tech}
-format_bib("bib/tech.bib") %>%
+```{r print-conf}
+format_bib("bib/conf.bib") %>%
   mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
          author = map_chr(author, all_authors),
          year = as.integer(year),
          month = as.integer(month)) %>%
-  arrange(desc(year), desc(month), author) %>%
+  separate(eventdate, c("year", "month", "day", NA, NA, "end_day"),
+           fill = "right", extra = "drop", convert = TRUE) %>%
+  arrange(desc(year), desc(month), desc(day), desc(end_day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
