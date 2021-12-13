@@ -1,4 +1,4 @@
-bib <- "bib/pubs.bib"
+bib <- "bib/tech.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -9,6 +9,10 @@ all_authors <- function(author, last_first = TRUE) {
 }
 
 format_author <- function(author, last_first = TRUE) {
+  if (author == "Accessible Teaching, Learning, & Assessment Systems") {
+    return("Accessible Teaching, Learning, and Assessment Systems")
+  }
+  
   parts <- stringr::str_split(author, " ") %>%
     purrr::flatten_chr()
   
