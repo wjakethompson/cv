@@ -1,4 +1,4 @@
-bib <- "bib/tech.bib"
+bib <- "bib/rpkg.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -34,23 +34,11 @@ format_author <- function(author, last_first = TRUE) {
 
 format_pkg_title <- function(title) {
   tibble::tibble(title = title) %>%
-    dplyr::mutate(title = stringr::str_to_lower(title),
-                  title = stringr::str_replace_all(title, " atlas", " ATLAS"),
-                  title = stringr::str_replace_all(title, " dlm", " DLM"),
-                  title = stringr::str_replace_all(title,
-                                                   "university of kansas",
-                                                   "University of Kansas"),
-                  title = stringr::str_replace_all(title,
-                                                   "dynamic learning maps",
-                                                   "Dynamic Learning Maps"),
-                  title = stringr::str_replace_all(title,
-                                                   "taylor swift",
-                                                   "Taylor Swift")) %>%
-    tidyr::separate(title, c("part1", "part2"), sep = ": ", fill = "right",
-                    extra = "merge") %>%
-    dplyr::mutate(part2 = paste0(stringr::str_to_upper(stringr::str_sub(part2, 1L, 1L)),
-                                 stringr::str_sub(part2, 2L, -1L)),
-                  title = paste0(part1, ": ", part2)) %>%
+    dplyr::mutate(title = gsub("^(.*?)\\{", "\\L\\1", title, perl = TRUE),
+                  title = gsub("\\}(.*?)\\{", "\\L\\1", title, perl = TRUE),
+                  title = gsub("\\}(.*)$", "\\L\\1", title, perl = TRUE),
+                  title = gsub("(?<=\\: )([a-z])", "\\U\\1", title,
+                               perl = TRUE)) %>% 
     dplyr::pull(title)
 }
 
@@ -213,20 +201,17 @@ cite_manual <- function(ref_info) {
   
   new_info <- ref_info %>%
     dplyr::mutate(full_author = authors,
-                  across(where(is.character),
-                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
-    dplyr::mutate(title = purrr::map_chr(title, format_pkg_title))
+                  title = purrr::map_chr(title, format_pkg_title))
     
   if (!url_present) {
-    new_info <- add_column(new_info, url = NA_character_)
+    new_info <- tibble::add_column(new_info, url = NA_character_)
   }
   
   new_info %>%
-    select(full_author, year, title, note, url) %>%
+    select(full_author, year, date, title, note, url) %>%
     mutate(url = case_when(str_detect(note, "https") ~ note,
                            TRUE ~ url),
-           note = case_when(!is.na(url) & !str_detect(url, "CRAN") ~ NA_character_,
-                            is.na(url) ~ NA_character_,
+           note = case_when(is.na(url) ~ "Internal R package",
                             TRUE ~ note),
            url = map_chr(url,
                          function(u) {
