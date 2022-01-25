@@ -271,17 +271,85 @@ format_bib("bib/conf.bib") %>%
 ## R Packages {data-icon="cube"}
 
 ```{r print-rpkg}
-if (!file.exists("bib/rpkg.bib")) file.create("bib/rpkg.bib")
-# suppressWarnings(
-#   knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
-#                    file = "bib/rpkg.bib", tweak = TRUE, width = 2000)
-# )
+check_pkg <- function(x) {
+  pkg <- str_replace(x, ".*\\/", "")
+  suppressMessages(remotes::install_github(x, force = FALSE))
+  requireNamespace(pkg, quietly = TRUE)
+}
+
+my_pkg <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/jayhawkdown",
+            "atlas-aai/ratlas", "wjakethompson/taylor", "wjakethompson/wjake",
+            "wjakethompson/measr")
+my_installed <- vapply(my_pkg, check_pkg, logical(1))
+
+if (all(my_installed)) {
+  if (file.exists("bib/rpkg.bib")) unlink("bib/rpkg.bib")
+  file.create("bib/rpkg.bib")
+  
+  walk(my_pkg, function(.x) {
+    pkg <- str_replace_all(.x, ".*\\/", "")
+    meta <- packageDescription(pkg)
+    
+    authors <- meta$Author %>% 
+      str_split(",\\n  ") %>% 
+      flatten_chr() %>% 
+      str_subset("aut") %>% 
+      str_replace_all(" \\[.*", "") %>% 
+      str_replace_all("\\n.*", "") %>% 
+      knitr::combine_words(sep = " and ", oxford_comma = FALSE)
+    
+    last_commit <- gh::gh(glue("/repos/{.x}/commits/{meta$RemoteSha}"))
+    last_date <- last_commit$commit$author$date %>% 
+      lubridate::ymd_hms() %>% 
+      lubridate::as_date()
+    
+    url <- meta$URL %>% 
+      str_split(",\\n") %>% 
+      flatten_chr() %>% 
+      str_replace_all(", ", ",") %>% 
+      knitr::combine_words(sep = ",", and = ",", oxford_comma = FALSE)
+    
+    cite <- if (length(url)) {
+      glue("@Manual{{R-{pkg},
+              title = {{{pkg}: {str_replace_all(meta$Title, '\\n', ' ')}}},
+              author = {{{authors}}},
+              year = {{{lubridate::year(last_date)}}},
+              date = {{{last_date}}},
+              note = {{R package version {meta$Version}}},
+              url = {{{url}}}
+            }}")
+    } else {
+      glue("@Manual{{R-{pkg},
+              title = {{{pkg}: {meta$Title}}},
+              author = {{{authors}}},
+              year = {{{lubridate::year(last_date)}}},
+              date = {{{last_date}}},
+              note = {{R package version {meta$Version}}}
+            }}")
+    }
+    
+    
+    write_lines(cite, file = "bib/rpkg.bib", append = TRUE)
+  })
+} else {
+  stop("Not all packages installed", call. = FALSE)
+}
+
+read_lines("bib/rpkg.bib") %>%
+  str_replace_all("Dynamic Learning Maps", "{Dynamic Learning Maps}") %>%
+  str_replace_all("University of Kansas", "{University of Kansas}") %>% 
+  str_replace_all("ATLAS", "{ATLAS}") %>% 
+  str_replace_all("Taylor Swift's", "{Taylor Swift's}") %>% 
+  str_replace_all(" R ", " {R} ") %>% 
+  str_replace_all("Bayesian", "{Bayesian}") %>% 
+  str_replace_all("'Stan'", "'{Stan}'") %>% 
+  write_lines("bib/rpkg.bib")
 
 format_bib("bib/rpkg.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors, last_first = FALSE),
-         year = as.integer(year)) %>%
-  arrange(desc(year), author) %>%
+  mutate(author = map_chr(author, all_authors, last_first = FALSE),
+         year = as.integer(year),
+         date = lubridate::ymd(date)) %>%
+  arrange(desc(date), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
