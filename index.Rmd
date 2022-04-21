@@ -270,7 +270,7 @@ format_bib("bib/conf.bib") %>%
 
 ## R Packages {data-icon="cube"}
 
-```{r print-rpkg}
+```{r install-rpkg, include = FALSE}
 check_pkg <- function(x) {
   pkg <- str_replace(x, ".*\\/", "")
   suppressMessages(remotes::install_github(x, force = FALSE))
@@ -281,7 +281,9 @@ my_pkg <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/jayhawkdown",
             "atlas-aai/ratlas", "wjakethompson/taylor", "wjakethompson/wjake",
             "wjakethompson/measr")
 my_installed <- vapply(my_pkg, check_pkg, logical(1))
+```
 
+```{r print-rpkg}
 if (all(my_installed)) {
   if (file.exists("bib/rpkg.bib")) unlink("bib/rpkg.bib")
   file.create("bib/rpkg.bib")
