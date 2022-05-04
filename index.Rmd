@@ -445,8 +445,8 @@ bind_rows(grants, awards) %>%
 
 ### Institutional Service
 
-- University of Kansas
-    - Research Technology working group (2021)
+-   University of Kansas
+    -   Research Technology working group (2021)
 
 N/A
 
