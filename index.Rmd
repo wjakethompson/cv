@@ -273,13 +273,17 @@ format_bib("bib/conf.bib") %>%
 ```{r install-rpkg, include = FALSE}
 check_pkg <- function(x) {
   pkg <- str_replace(x, ".*\\/", "")
-  suppressMessages(remotes::install_github(x, force = FALSE))
+  if (str_detect(x, "\\/")) {
+    suppressMessages(remotes::install_github(x, force = FALSE))
+  } else {
+    update.packages(pkg, ask = FALSE)
+  }
   requireNamespace(pkg, quietly = TRUE)
 }
 
 my_pkg <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/jayhawkdown",
             "atlas-aai/ratlas", "wjakethompson/taylor", "wjakethompson/wjake",
-            "wjakethompson/measr")
+            "wjakethompson/measr", "tdcmStan")
 my_installed <- vapply(my_pkg, check_pkg, logical(1))
 ```
 
@@ -300,17 +304,27 @@ if (all(my_installed)) {
       str_replace_all("\\n.*", "") %>% 
       knitr::combine_words(sep = " and ", oxford_comma = FALSE)
     
-    last_commit <- gh::gh(glue("/repos/{.x}/commits/{meta$RemoteSha}"))
-    last_date <- last_commit$commit$author$date %>% 
-      lubridate::ymd_hms() %>% 
-      lubridate::as_date()
+    repo <- meta$Repository
     
-    url <- meta$URL %>% 
-      str_split(",\\n") %>% 
-      flatten_chr() %>% 
-      str_replace_all(", ", ",") %>% 
-      knitr::combine_words(sep = ",", and = ",", oxford_comma = FALSE)
-    
+    if (!is.null(repo) && repo == "CRAN") {
+      last_date <- meta$`Date/Publication` %>% 
+        lubridate::ymd_hms(tz = "UTC") %>% 
+        lubridate::as_date()
+      
+      url <- citation(pkg)$url
+    } else {
+      last_commit <- gh::gh(glue("/repos/{.x}/commits/{meta$RemoteSha}"))
+      last_date <- last_commit$commit$author$date %>% 
+        lubridate::ymd_hms() %>% 
+        lubridate::as_date()
+      
+      url <- meta$URL %>% 
+        str_split(",\\n") %>% 
+        flatten_chr() %>% 
+        str_replace_all(", ", ",") %>% 
+        knitr::combine_words(sep = ",", and = ",", oxford_comma = FALSE)
+    }
+   
     cite <- if (length(url)) {
       glue("@Manual{{R-{pkg},
               title = {{{pkg}: {str_replace_all(meta$Title, '\\n', ' ')}}},
@@ -344,7 +358,9 @@ read_lines("bib/rpkg.bib") %>%
   str_replace_all("Taylor Swift's", "{Taylor Swift's}") %>% 
   str_replace_all(" R ", " {R} ") %>% 
   str_replace_all("Bayesian", "{Bayesian}") %>% 
-  str_replace_all("'Stan'", "'{Stan}'") %>% 
+  str_replace_all("Stan", "{Stan}") %>% 
+  str_replace_all("tdcmStan", "{tdcmStan}") %>% 
+  str_replace_all("TDCMs", "{TDCMs}") %>% 
   write_lines("bib/rpkg.bib")
 
 format_bib("bib/rpkg.bib") %>%
@@ -411,7 +427,7 @@ awards <- awd_data %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
 
 grants <- gnt_data %>%
-  mutate(display_text = glue("- **{role}:** *{title}* ({start}--{end}). {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
+  mutate(display_text = glue("- **{role}:** *{title}*{ifelse(is.na(start), '', paste0(' (', start, '--', end, ')'))}. {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
   arrange(desc(start)) %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
@@ -424,10 +440,10 @@ bind_rows(grants, awards) %>%
                                     "Previously Funded",
                                     "Unfunded",
                                     "Professional Awards"),
-                         labels = c("Currently Funded Grants",
-                                    "Grants Under Review",
-                                    "Previously Funded Grants",
-                                    "Unfunded Grants",
+                         labels = c("Currently Funded Projects",
+                                    "Projects Under Review",
+                                    "Previously Funded Projects",
+                                    "Unfunded Projects",
                                     "Professional Awards"))) %>%
   arrange(status) %>%
   glue_data(
@@ -455,7 +471,7 @@ N/A
 -   American Educational Research Association (2015--present)
     -   Division D: Measurement and Research Methodology
     -   SIG: Cognition and Assessment
-    -   Program Chair, Cognition and Assessment SIG (2023)
+    -   Program Chair, Cognition and Assessment SIG (2022--2023)
 -   American Statistical Association (2019--present)
     -   Sections: Bayesian Statistical Science, Statistical Computing, Statistics in Sports
 -   National Council on Measurement in Education (2015--present)
