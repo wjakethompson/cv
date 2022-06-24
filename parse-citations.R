@@ -1,4 +1,4 @@
-bib <- "bib/rpkg.bib"
+bib <- "bib/pubs.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -58,7 +58,7 @@ cite_article <- function(ref_info) {
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}, {volume}*{ifelse(is.na(number), '', paste0('(', number, ')'))}{ifelse(is.na(pages), '', paste0(', ', pages))}. https://doi.org/{doi}"
+      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}{ifelse(is.na(volume), '', paste0(', ', volume))}*{ifelse(is.na(number), '', paste0('(', number, ')'))}{ifelse(is.na(pages), '', paste0(', ', pages))}. https://doi.org/{doi}"
     )
 }
 
