@@ -358,7 +358,7 @@ read_lines("bib/rpkg.bib") %>%
   str_replace_all("Taylor Swift's", "{Taylor Swift's}") %>% 
   str_replace_all(" R ", " {R} ") %>% 
   str_replace_all("Bayesian", "{Bayesian}") %>% 
-  str_replace_all("tdcmStan", "{tdcmStan}") %>% 
+  str_replace_all("(?<!R-)tdcmStan", "{tdcmStan}") %>% 
   str_replace_all("(?<!m)Stan", "{Stan}") %>% 
   str_replace_all("TDCMs", "{TDCMs}") %>% 
   write_lines("bib/rpkg.bib")

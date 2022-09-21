@@ -1,4 +1,4 @@
-bib <- "bib/pubs.bib"
+bib <- "bib/rpkg.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -33,6 +33,34 @@ format_author <- function(author, last_first = TRUE) {
 }
 
 format_pkg_title <- function(title) {
+  close_loc <- str_locate_all(title, "\\}") %>% 
+    pluck(1) %>% 
+    as_tibble() %>% 
+    mutate(first = case_when(start == min(start) ~ "first"),
+           last = case_when(start == max(start) ~ "last")) %>% 
+    select(-end) %>% 
+    pivot_longer(-start, names_to = "loc", values_to = "position") %>% 
+    select(position, start) %>% 
+    filter(!is.na(position)) %>% 
+    deframe()
+  start_loc <- str_locate_all(title, "\\{") %>% 
+    pluck(1) %>% 
+    as_tibble() %>% 
+    mutate(first = case_when(start == min(start) ~ "first"),
+           last = case_when(start == max(start) ~ "last")) %>% 
+    select(-end) %>% 
+    pivot_longer(-start, names_to = "loc", values_to = "position") %>% 
+    select(position, start) %>% 
+    filter(!is.na(position)) %>% 
+    deframe()
+  
+  if (close_loc["first"] < start_loc["first"]) {
+    title <- paste0("{", title)
+  }
+  if (start_loc["last"] > close_loc["last"]) {
+    title <- paste0(title, "}")
+  }
+  
   tibble::tibble(title = title) %>%
     dplyr::mutate(title = gsub("^(.*?)\\{", "\\L\\1", title, perl = TRUE),
                   title = gsub("\\}(.*?)\\{", "\\L\\1", title, perl = TRUE),
