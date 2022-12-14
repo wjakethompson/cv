@@ -1,4 +1,4 @@
-bib <- "bib/rpkg.bib"
+bib <- "bib/pubs.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -102,15 +102,17 @@ cite_incollection <- function(ref_info) {
   
   ref_info %>%
     dplyr::mutate(full_author = authors,
-                  full_editor = case_when(length(editors) > 1 ~ paste0("In ", combine_eds(editors), " (Eds.) "),
-                                          is.na(editors) ~ "",
-                                          TRUE ~ paste0("In ", editors, " (Ed.) ")),
-                  across(where(is.character),
-                         ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
-    dplyr::select(full_author, year, title, full_editor, booktitle, pages,
+                  full_editor = dplyr::case_when(length(editors) > 1 ~
+                                                   paste0("In ", combine_eds(editors), " (Eds.) "),
+                                                 is.na(editors) ~ "",
+                                                 TRUE ~ paste0("In ", editors, " (Ed.) ")),
+                  dplyr::across(where(is.character),
+                                ~stringr::str_replace_all(.x, "\\{|\\}", "")),
+                  edition = as.numeric(edition)) %>%
+    dplyr::select(full_author, year, title, full_editor, booktitle, edition, pages,
                   publisher, doi) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}. {full_editor}*{booktitle}* (pp. {pages}). {publisher}. https://doi.org/{doi}"
+      "{full_author} ({year}). {title}. {full_editor}*{booktitle}* ({ifelse(is.na(edition), '', paste0(scales::ordinal(edition), ' ed., '))}pp. {pages}). {publisher}. https://doi.org/{doi}"
     )
 }
 
