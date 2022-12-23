@@ -1,4 +1,4 @@
-bib <- "bib/pubs.bib"
+bib <- "bib/tech.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -9,7 +9,8 @@ all_authors <- function(author, last_first = TRUE) {
 }
 
 format_author <- function(author, last_first = TRUE) {
-  if (author == "Accessible Teaching, Learning, & Assessment Systems") {
+  if (author == "Accessible Teaching, Learning, & Assessment Systems" |
+      author == "{Accessible Teaching, Learning, & Assessment Systems}") {
     return("Accessible Teaching, Learning, and Assessment Systems")
   }
   
@@ -202,10 +203,10 @@ cite_report <- function(ref_info) {
   
   cite_info <- ref_info %>%
     dplyr::mutate(full_author = authors,
-                  across(where(is.character),
+                  dplyr::across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", "")),
-                  full_title = case_when(is.na(subtitle) ~ title,
-                                         TRUE ~ paste0(title, ": ", subtitle)))
+                  full_title = dplyr::case_when(is.na(subtitle) ~ title,
+                                                TRUE ~ paste0(title, ": ", subtitle)))
   
   cite <- cite_info %>%
     glue::glue_data(
