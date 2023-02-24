@@ -1,4 +1,4 @@
-bib <- "bib/rpkg.bib"
+bib <- "bib/pubs.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -81,13 +81,19 @@ cite_article <- function(ref_info) {
     purrr::flatten_chr() %>%
     all_authors()
   
-  ref_info %>%
+  cite <- ref_info %>%
     dplyr::mutate(full_author = authors,
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}{ifelse(is.na(volume), '', paste0(', ', volume))}*{ifelse(is.na(number), '', paste0('(', number, ')'))}{ifelse(is.na(pages), '', paste0(', ', pages))}. {ifelse(is.na(doi), url, paste0('https://doi.org/', doi))}"
+      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}{ifelse(is.na(volume) | volume == '', '', paste0(', ', volume))}*{ifelse(is.na(number), '', paste0('(', number, ')'))}{ifelse(is.na(pages) | pages == '', '', paste0(', ', pages))}. {ifelse(is.na(doi), url, paste0('https://doi.org/', doi))}"
     )
+  
+  if (!is.na(ref_info$preprint)) {
+    cite <- glue::glue("{cite} [<a href=https://doi.org/{ref_info$preprint}>Preprint</a>]")
+  }
+  
+  return(cite)
 }
 
 cite_incollection <- function(ref_info) {
