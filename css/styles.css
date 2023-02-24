@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro|Source+Code+Pro|Oxygen");
+@import url('https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&family=Source+Sans+Pro:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
 
 .pagedjs_page:not(:first-of-type) {
   --sidebar-width: 3rem;
@@ -10,9 +11,9 @@
 /* Main text is source sans pro*/
 body {
   font-family: "Source Sans Pro", sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.3;
-  color: #444;
+  color: #000;
 }
 
 /* Give headers oxygen font */
@@ -25,15 +26,31 @@ h4 {
   margin: 0;
 }
 
+[data-id="main"] h1, h2, h3, h4 {
+  font-family: "Oxygen", serif;
+  color: #000 !important; 
+}
+
+[data-id="main"] h2>i {
+  color: #000 !important;
+}
+
 strong {
   font-weight: 700;
 }
 
 [data-id="title"] h1 {
-    font-weight: 300;
+    font-weight: 400;
     font-size: 1.8rem;
     line-height: 1.5;
     text-transform: none;
+}
+
+[data-id="main"] {
+    width: var(--main-width);
+    padding: 0 0.25in 0 0.25in;
+    font-size: 0.75rem;
+    float: left;
 }
 
 a {
@@ -64,6 +81,10 @@ sup {
   --sidebar-horizontal-padding: 0.01in; /* Reduce sidebar padding */
   --decorator-outer-dim: 10px; /* Make position deliniating circles larger */
   --decorator-border: 2px solid #009FB7; /* Make timeline a blue as well*/
+}
+
+#employment .place, #education .place {
+  font-size: 0.77rem;
 }
 
 .details .place {
