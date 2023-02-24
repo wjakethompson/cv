@@ -175,7 +175,7 @@ emp_data %>%
              timeline = as.character(timeline),
              description_bullets = map_chr(descriptions, ~paste("-", .x, collapse = "\n")),
              prev_pos = ifelse(nrow(previous) == 0, NA_character_,
-                               paste("**Position History**\n\n",
+                               paste("#### Position History\n\n",
                                      map_chr(prev_positions, ~paste("-", .x, collapse = "\n"))))) %>%
       select(title, timeline, description_bullets, prev_pos)
   })) %>%
