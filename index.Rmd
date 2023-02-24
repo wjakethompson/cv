@@ -67,9 +67,9 @@ logo
 
 -   Diagnostic Classification Models
 -   Item Response Theory
+-   Score Reporting
 -   Reliability
--   Differential Item Functioning
--   
+-   Model Fit
 
 **Data Analysis:**
 
