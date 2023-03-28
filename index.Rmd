@@ -421,7 +421,9 @@ format_bib("bib/work.bib") %>%
 
 ```{r print-awds}
 awd_data <- read_xlsx("cv-data.xlsx", sheet = "awards")
-gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants")
+gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants") %>%
+  filter(display) %>%
+  select(-display)
 
 awards <- awd_data %>%
   filter(display) %>%
@@ -490,6 +492,7 @@ N/A
 
 -   Behaviormetrika (2019--present)
 -   International Journal of Research in Education and Science (2019--present)
+-   Journal of Educational Measurement (2023--present)
 -   Journal of Open Source Software (2019--present)
 -   National Council on Measurement in Education annual meeting (2019--present)
 -   American Educational Research Association, Division H, Outstanding Publications (2019)
