@@ -289,7 +289,7 @@ check_pkg <- function(x) {
 
 my_pkg <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/jayhawkdown",
             "atlas-aai/ratlas", "wjakethompson/taylor", "wjakethompson/wjake",
-            "wjakethompson/measr", "tdcmStan")
+            "wjakethompson/measr", "tdcmStan", "dcm2")
 my_installed <- vapply(my_pkg, check_pkg, logical(1))
 ```
 
@@ -367,6 +367,7 @@ read_lines("bib/rpkg.bib") %>%
   str_replace_all("(?<!R-)tdcmStan", "{tdcmStan}") %>% 
   str_replace_all("(?<!m)Stan", "{Stan}") %>% 
   str_replace_all("TDCMs", "{TDCMs}") %>% 
+  str_replace_all("M2", "{M<sub>2</sub>}") %>%
   write_lines("bib/rpkg.bib")
 
 format_bib("bib/rpkg.bib") %>%
