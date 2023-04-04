@@ -186,12 +186,20 @@ cite_presentation <- function(ref_info) {
       )
   }
   
-  if (!is.na(cite_info$url)) {
-    final_url <- ifelse(stringr::str_detect(cite_info$url, "\\.pdf"),
-                        glue("[<a href={cite_info$url}>PDF</a>]"),
-                        glue("{cite_info$url}"))
+  if (!is.na(cite_info$url) | !is.na(cite_info$slides)) {
+    url <- cite_info$url
+    slides <- cite_info$slides
     
-    cite <- glue::glue("{cite} {final_url}")
+    if (!is.na(url) & !stringr::str_detect(url, "\\.pdf")) {
+      cite <- glue::glue("{cite} {url}")
+    } else {
+      pdf <- ifelse(is.na(url), NA, glue::glue("<a href={url}>PDF</a>"))
+      sld <- ifelse(is.na(slides), NA, glue::glue("<a href={slides}>Slides</a>"))
+      links <- c(pdf, sld)
+      links <- links[which(!is.na(links))]
+      
+      cite <- glue::glue("{cite} [{paste(links, collapse = ' / ')}]")
+    }
   }
   
   if (("addendum" %in% colnames(cite_info)) && !is.na(cite_info$addendum)) {
