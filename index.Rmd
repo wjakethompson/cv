@@ -47,12 +47,12 @@ logo
 
 ## Contact {#contact}
 
--   <i class="fa fa-envelope"></i> [wjakethompson\@gmail.com](mailto:wjakethompson@gmail.com){.email}
 -   <i class="fa fa-link"></i> [wjakethompson.com](https://wjakethompson.com)
 -   <i class="ai ai-orcid"></i> [0000-0001-7339-0300](https://orcid.org/0000-0001-7339-0300)
 -   <i class="fab fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
 -   <i class="fab fa-mastodon"></i> [\@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)
 -   <i class="fab fa-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
+-   <i class="fab fa-linkedin"></i> [in/wjakethompson](https://linkedin.com/in/wjakethompson)
 
 
 ## Skills {#skills}
