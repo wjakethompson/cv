@@ -437,7 +437,15 @@ awards <- awd_data %>%
 
 grants <- gnt_data %>%
   mutate(display_text = glue("- **{role}:** *{title}*{ifelse(is.na(start), '', paste0(' (', start, '--', end, ')'))}. {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
-  arrange(desc(start)) %>%
+  mutate(role = factor(role,
+                       levels = c("Principal Investigator",
+                                  "Co-Principal Investigator",
+                                  "Investigator", "Co-Investigator",
+                                  "Other Personnel")),
+         status = factor(status,
+                         levels = c("Currently Funded", "Previously Funded",
+                                    "Unfunded"))) |> 
+  arrange(status, role, desc(start)) %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
 
