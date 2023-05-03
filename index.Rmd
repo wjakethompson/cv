@@ -428,6 +428,7 @@ gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants") %>%
 
 awards <- awd_data %>%
   filter(display) %>%
+  arrange(desc(start_date), award) %>%
   mutate(date = case_when(is.na(end_date) ~ as.character(start_date),
                           TRUE ~ paste0(start_date, "--", end_date)),
          display_text = glue("- {award} ({date})"),
@@ -441,7 +442,7 @@ grants <- gnt_data %>%
                        levels = c("Principal Investigator",
                                   "Co-Principal Investigator",
                                   "Investigator", "Co-Investigator",
-                                  "Other Personnel")),
+                                  "Other Personnel (Psychometrician)")),
          status = factor(status,
                          levels = c("Currently Funded", "Previously Funded",
                                     "Unfunded"))) |> 
@@ -492,7 +493,8 @@ N/A
 -   American Statistical Association (2019--present)
     -   Sections: Bayesian Statistical Science, Statistical Computing, Statistics in Sports
 -   National Council on Measurement in Education (2015--present)
-    -   SIGIMIE: Diagnostic Measurement
+    -   SIGMIE: Diagnostic Measurement
+    -   Co-Chair, Diagnostic Measurement SIGMIE (2024--2026)
     -   Student Representative, Diversity and Testing Committee (2015)
 
 N/A
