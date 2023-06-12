@@ -487,13 +487,9 @@ N/A
 ### Professional Affiliations
 
 -   American Educational Research Association (2015--present)
-    -   Division D: Measurement and Research Methodology
-    -   SIG: Cognition and Assessment
     -   Program Chair, Cognition and Assessment SIG (2022--2023)
 -   American Statistical Association (2019--present)
-    -   Sections: Bayesian Statistical Science, Statistical Computing, Statistics in Sports
 -   National Council on Measurement in Education (2015--present)
-    -   SIGMIE: Diagnostic Measurement
     -   Co-Chair, Diagnostic Measurement SIGMIE (2024--2026)
     -   Student Representative, Diversity and Testing Committee (2015)
 
