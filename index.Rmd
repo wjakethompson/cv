@@ -38,6 +38,8 @@ source("parse-citations.R")
 }
 ```
 
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+
 # Aside
 
 ```{r logo, warning = FALSE, message = FALSE, error = FALSE, fig.align = "center", out.width="50%"}
@@ -47,15 +49,14 @@ logo
 
 ## Contact {#contact}
 
--   <i class="fa fa-link"></i> [wjakethompson.com](https://wjakethompson.com)
--   <i class="ai ai-orcid"></i> [0000-0001-7339-0300](https://orcid.org/0000-0001-7339-0300)
--   <i class="fab fa-linkedin"></i> [in/wjakethompson](https://linkedin.com/in/wjakethompson)
--   <i class="fab fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
--   <i class="fab fa-mastodon"></i> [\@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)
--   <i class="fa-solid fa-square"></i> [\@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)
--   <i class="fab fa-threads"></i> [\@wjakethompson](https://www.threads.net/@wjakethompson)
--   <i class="fab fa-x-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
-
+-   <iconify-icon icon="fa6-solid:link"></iconify-icon> [wjakethompson.com](https://wjakethompson.com)
+-   <iconify-icon icon="fa-brands:orcid"></iconify-icon> [0000-0001-7339-0300](https://orcid.org/0000-0001-7339-0300)
+-   <iconify-icon icon="fa6-brands:linkedin"></iconify-icon> [in/wjakethompson](https://linkedin.com/in/wjakethompson)
+-   <iconify-icon icon="fa6-brands:github"></iconify-icon> [\@wjakethompson](https://github.com/wjakethompson)
+-   <iconify-icon icon="fa6-brands:mastodon"></iconify-icon> [\@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)
+-   <iconify-icon icon="simple-icons:bluesky"></iconify-icon> [\@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)
+-   <iconify-icon icon="fa6-brands:threads"></iconify-icon> [\@wjakethompson](https://www.threads.net/@wjakethompson)
+-   <iconify-icon icon="fa6-brands:x-twitter"></iconify-icon> [\@wjakethompson](https://twitter.com/wjakethompson)
 
 
 ## Skills {#skills}
