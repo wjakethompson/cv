@@ -43,9 +43,9 @@ source("parse-citations.R")
 # Aside
 
 ```{r logo, warning = FALSE, message = FALSE, error = FALSE, fig.align = "center", out.width="50%"}
-logo <- image_read("https://raw.githubusercontent.com/wjakethompson/wjakethompson.com/main/static/img/wjakethompson.png")
-logo
+knitr::include_graphics("wjakethompson.png")
 ```
+
 
 ## Contact {#contact}
 
