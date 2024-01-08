@@ -1,7 +1,7 @@
 library(tidyverse)
 library(spelling)
 
-ignore_words <- read_csv("spelling-whitelist.csv",
+ignore_words <- read_csv("spelling-allowed.csv",
                          col_types = cols(word = col_character())) %>% 
   pull(word)
 
