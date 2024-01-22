@@ -65,6 +65,7 @@ knitr::include_graphics("wjakethompson.png")
 
 -   R
 -   R Markdown
+-   Quarto
 -   Stan
 
 **Psychometrics:**
