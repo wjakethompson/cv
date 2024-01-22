@@ -100,6 +100,11 @@ sup {
 }
 
 /* Laptop icon isn't centered by default which is lame */
+div#contact iconify-icon {
+  vertical-align: middle;
+  padding-right: 2px;
+}
+
 .fa-laptop {
   margin-left: -3px;
   margin-top: 2px;
