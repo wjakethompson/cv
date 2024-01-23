@@ -49,9 +49,10 @@ knitr::include_graphics("wjakethompson.png")
 
 ## Contact {#contact}
 
--   <iconify-icon icon="fa6-solid:link"></iconify-icon> [wjakethompson.com](https://wjakethompson.com)
--   <iconify-icon icon="fa-brands:orcid"></iconify-icon> [0000-0001-7339-0300](https://orcid.org/0000-0001-7339-0300)
+-   <iconify-icon icon="fa6-solid:globe"></iconify-icon> [wjakethompson.com](https://wjakethompson.com)
 -   <iconify-icon icon="fa6-brands:linkedin"></iconify-icon> [in/wjakethompson](https://linkedin.com/in/wjakethompson)
+-   <iconify-icon icon="fa6-brands:orcid"></iconify-icon> [0000-0001-7339-0300](https://orcid.org/0000-0001-7339-0300)
+-   <iconify-icon icon="fa6-brands:google-scholar"></iconify-icon> [W. Jake Thompson](https://scholar.google.com/citations?user=Hk98G5QAAAAJ)
 -   <iconify-icon icon="fa6-brands:github"></iconify-icon> [\@wjakethompson](https://github.com/wjakethompson)
 -   <iconify-icon icon="fa6-brands:mastodon"></iconify-icon> [\@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)
 -   <iconify-icon icon="simple-icons:bluesky"></iconify-icon> [\@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)
