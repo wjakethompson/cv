@@ -450,10 +450,11 @@ grants <- gnt_data %>%
                        levels = c("Principal Investigator",
                                   "Co-Principal Investigator",
                                   "Investigator", "Co-Investigator",
+                                  "Advisor",
                                   "Other Personnel (Psychometrician)")),
          status = factor(status,
                          levels = c("Currently Funded", "Previously Funded",
-                                    "Unfunded"))) |> 
+                                    "Pending", "Unfunded"))) |> 
   arrange(status, role, desc(start)) %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
