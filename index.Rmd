@@ -55,7 +55,7 @@ knitr::include_graphics("wjakethompson.png")
 -   <iconify-icon icon="fa6-brands:google-scholar"></iconify-icon> [W. Jake Thompson](https://scholar.google.com/citations?user=Hk98G5QAAAAJ)
 -   <iconify-icon icon="fa6-brands:github"></iconify-icon> [\@wjakethompson](https://github.com/wjakethompson)
 -   <iconify-icon icon="fa6-brands:mastodon"></iconify-icon> [\@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)
--   <iconify-icon icon="simple-icons:bluesky"></iconify-icon> [\@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)
+-   <iconify-icon icon="fa6-brands:bluesky"></iconify-icon> [\@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)
 -   <iconify-icon icon="fa6-brands:threads"></iconify-icon> [\@wjakethompson](https://www.threads.net/@wjakethompson)
 -   <iconify-icon icon="fa6-brands:x-twitter"></iconify-icon> [\@wjakethompson](https://twitter.com/wjakethompson)
 
