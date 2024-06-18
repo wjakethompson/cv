@@ -286,19 +286,21 @@ format_bib("bib/conf.bib") %>%
 
 ```{r install-rpkg, include = FALSE}
 check_pkg <- function(x) {
-  pkg <- str_replace(x, ".*\\/", "")
-  if (str_detect(x, "\\/")) {
-    suppressMessages(remotes::install_github(x, force = FALSE))
-  } else {
-    update.packages(pkg, ask = FALSE)
-  }
-  requireNamespace(pkg, quietly = TRUE)
+  requireNamespace(x, quietly = TRUE)
 }
 
-my_pkg <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/jayhawkdown",
-            "atlas-aai/ratlas", "wjakethompson/taylor", "wjakethompson/wjake",
-            "wjakethompson/measr", "tdcmStan", "dcm2")
-my_installed <- vapply(my_pkg, check_pkg, logical(1))
+db <- tools::CRAN_package_db()
+crn_pkgs <- db |> 
+  as_tibble() |> 
+  filter(str_detect(Author, "0000-0001-7339-0300")) |>
+  pull(Package)
+git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "atlas-aai/ratlas",
+              "wjakethompson/jayhawkdown", "wjakethompson/wjake")
+
+all_pkgs <- c(crn_pkgs, git_pkgs)
+pak::pak(all_pkgs, ask = FALSE)
+pkg_names <- str_replace_all(all_pkgs, "^.*\\/", "")
+my_installed <- vapply(pkg_names, check_pkg, logical(1))
 ```
 
 ```{r print-rpkg}
@@ -306,75 +308,12 @@ if (all(my_installed)) {
   if (file.exists("bib/rpkg.bib")) unlink("bib/rpkg.bib")
   file.create("bib/rpkg.bib")
   
-  walk(my_pkg, function(.x) {
-    pkg <- str_replace_all(.x, ".*\\/", "")
-    meta <- packageDescription(pkg)
-    
-    authors <- meta$Author %>% 
-      str_split(",\\n  ") %>% 
-      flatten_chr() %>% 
-      str_subset("aut") %>% 
-      str_replace_all(" \\[.*", "") %>% 
-      str_replace_all("\\n.*", "") %>% 
-      knitr::combine_words(sep = " and ", oxford_comma = FALSE)
-    
-    repo <- meta$Repository
-    
-    if (!is.null(repo) && repo == "CRAN") {
-      last_date <- meta$`Date/Publication` %>% 
-        lubridate::ymd_hms(tz = "UTC") %>% 
-        lubridate::as_date()
-      
-      url <- citation(pkg)$url
-    } else {
-      last_commit <- gh::gh(glue("/repos/{.x}/commits/{meta$RemoteSha}"))
-      last_date <- last_commit$commit$author$date %>% 
-        lubridate::ymd_hms() %>% 
-        lubridate::as_date()
-      
-      url <- meta$URL %>% 
-        str_split(",\\n") %>% 
-        flatten_chr() %>% 
-        str_replace_all(", ", ",") %>% 
-        knitr::combine_words(sep = ",", and = ",", oxford_comma = FALSE)
-    }
-   
-    cite <- if (length(url)) {
-      glue("@Manual{{R-{pkg},
-              title = {{{pkg}: {str_replace_all(meta$Title, '\\n', ' ')}}},
-              author = {{{authors}}},
-              year = {{{lubridate::year(last_date)}}},
-              date = {{{last_date}}},
-              note = {{R package version {meta$Version}}},
-              url = {{{url}}}
-            }}")
-    } else {
-      glue("@Manual{{R-{pkg},
-              title = {{{pkg}: {meta$Title}}},
-              author = {{{authors}}},
-              year = {{{lubridate::year(last_date)}}},
-              date = {{{last_date}}},
-              note = {{R package version {meta$Version}}}
-            }}")
-    }
-    
-    
-    write_lines(cite, file = "bib/rpkg.bib", append = TRUE)
-  })
+  wjake::write_pkg_bib(pkg = all_pkgs, file = "bib/rpkg.bib")
 } else {
   stop("Not all packages installed", call. = FALSE)
 }
 
 read_lines("bib/rpkg.bib") %>%
-  str_replace_all("Dynamic Learning Maps", "{Dynamic Learning Maps}") %>%
-  str_replace_all("University of Kansas", "{University of Kansas}") %>% 
-  str_replace_all("ATLAS", "{ATLAS}") %>% 
-  str_replace_all("Taylor Swift's", "{Taylor Swift's}") %>% 
-  str_replace_all(" R ", " {R} ") %>% 
-  str_replace_all("Bayesian", "{Bayesian}") %>% 
-  str_replace_all("(?<!R-|=)tdcmStan", "{tdcmStan}") %>% 
-  str_replace_all("(?<!m)Stan", "{Stan}") %>% 
-  str_replace_all("TDCMs", "{TDCMs}") %>% 
   str_replace_all("M2", "{M<sub>2</sub>}") %>%
   write_lines("bib/rpkg.bib")
 

@@ -1,4 +1,4 @@
-bib <- "bib/pubs.bib"
+bib <- "bib/rpkg.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -34,6 +34,8 @@ format_author <- function(author, last_first = TRUE) {
 }
 
 format_pkg_title <- function(title) {
+  if (is.na(title)) return(title)
+  
   close_loc <- str_locate_all(title, "\\}") %>% 
     pluck(1) %>% 
     as_tibble() %>% 
@@ -242,32 +244,18 @@ cite_manual <- function(ref_info) {
     purrr::flatten_chr() %>%
     all_authors(last_first = FALSE)
   
-  url_present <- "url" %in% colnames(ref_info)
-  
   new_info <- ref_info %>%
     dplyr::mutate(full_author = authors,
-                  title = purrr::map_chr(title, format_pkg_title))
-    
-  if (!url_present) {
-    new_info <- tibble::add_column(new_info, url = NA_character_)
-  }
-  
+                  title = purrr::map_chr(title, format_pkg_title),
+                  publisher = purrr::map_chr(publisher, format_pkg_title),
+                  publisher = str_to_title(publisher),
+                  note = purrr::map_chr(note, format_pkg_title),
+                  note = str_to_title(note))
+
   new_info %>%
-    select(full_author, year, date, title, note, url) %>%
-    mutate(url = case_when(str_detect(note, "https") ~ note,
-                           TRUE ~ url),
-           note = case_when(is.na(url) ~ "Internal R package",
-                            TRUE ~ note),
-           url = map_chr(url,
-                         function(u) {
-                           if (is.na(u) | !str_detect(u, ",")) return(u)
-                           
-                           str_split(u, ",") %>%
-                             flatten_chr() %>%
-                             str_subset("github.com", negate = TRUE)
-                         })) %>%
+    select(full_author, year, title, version, type, publisher, doi, url, note) %>%
     glue::glue_data(
-      "{full_author} ({year}). *{title}*. {ifelse(is.na(note), '', paste0(note, '.'))} {ifelse(is.na(url), '', url)}"
+      "{full_author} ({year}). *{title}* ({version}) [{type}].{ifelse(is.na(publisher), '', glue(' {publisher}.'))} {ifelse(!is.na(doi), glue('https://doi.org/{doi}'), ifelse(!is.na(url), glue('{url}'), glue('{note}.')))}"
     )
 }
 
