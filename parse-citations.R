@@ -89,7 +89,7 @@ cite_article <- function(ref_info) {
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", ""))) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}{ifelse(is.na(volume) | volume == '', '', paste0(', ', volume))}*{ifelse(is.na(number), '', paste0('(', number, ')'))}{ifelse(is.na(pages) | pages == '', ifelse(is.na(eid), '', paste0(', Article ', eid)), paste0(', ', pages))}. {ifelse(is.na(doi), url, paste0('https://doi.org/', doi))}"
+      "{full_author} ({year}). {title}{ifelse(is.na(titleaddon), '', paste0(' [', titleaddon, ']'))}. *{journal}{ifelse(is.na(volume) | volume == '', '', paste0(', ', volume))}*{ifelse(is.na(number) | number == '', '', paste0('(', number, ')'))}{ifelse(is.na(pages) | pages == '', ifelse(is.na(eid), '', paste0(', Article ', eid)), paste0(', ', pages))}. {ifelse(is.na(doi), url, paste0('https://doi.org/', doi))}"
     )
   
   if (!is.na(ref_info$preprint)) {
