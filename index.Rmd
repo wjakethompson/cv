@@ -205,7 +205,7 @@ emp_data %>%
   )
 ```
 
-## Publications {data-icon="book"}
+## Publications {#pubs data-icon="book"}
 
 ```{r print-pub}
 format_bib("bib/pubs.bib") %>%
@@ -230,7 +230,7 @@ format_bib("bib/pubs.bib") %>%
   )
 ```
 
-## Technical Reports {data-icon="file-alt"}
+## Technical Reports {#tech data-icon="file-alt"}
 
 ```{r print-tech}
 format_bib("bib/tech.bib") %>%
@@ -255,7 +255,7 @@ format_bib("bib/tech.bib") %>%
   )
 ```
 
-## Conference Presentations {data-icon="users"}
+## Conference Presentations {#conf data-icon="users"}
 
 ```{r print-conf}
 format_bib("bib/conf.bib") %>%
@@ -282,7 +282,7 @@ format_bib("bib/conf.bib") %>%
   )
 ```
 
-## R Packages {data-icon="cube"}
+## R Packages {#rpkg data-icon="cube"}
 
 ```{r install-rpkg, include = FALSE}
 check_pkg <- function(x) {
@@ -339,7 +339,7 @@ format_bib("bib/rpkg.bib") %>%
   )
 ```
 
-## Tutorials and Workshops {data-icon="chalkboard-teacher"}
+## Tutorials and Workshops {#work data-icon="chalkboard-teacher"}
 
 ```{r print-work}
 format_bib("bib/work.bib") %>%
