@@ -1,4 +1,4 @@
-bib <- "bib/rpkg.bib"
+bib <- "bib/conf.bib"
 
 all_authors <- function(author, last_first = TRUE) {
   author %>%
@@ -175,6 +175,12 @@ cite_presentation <- function(ref_info) {
                   across(where(is.character),
                          ~stringr::str_replace_all(.x, "\\{|\\}", "")),
                   full_date = print_date)
+  
+  missing_cols <- setdiff(c("url", "paper", "slides"), colnames(cite_info))
+  for (i in seq_along(missing_cols)) {
+    cite_info <- cite_info %>%
+      dplyr::mutate(!!missing_cols[i] := NA_character_)
+  }
 
   if (is.na(cite_info$maintitle))  {
     cite <- cite_info %>%
@@ -188,11 +194,16 @@ cite_presentation <- function(ref_info) {
       )
   }
   
-  if (!is.na(cite_info$url) | !is.na(cite_info$slides)) {
+  if (!is.na(cite_info$url)) {
     url <- cite_info$url
+    cite <- glue::glue("{cite} {url}")
+  }
+  
+  if (!is.na(cite_info$paper) | !is.na(cite_info$slides)) {
+    paper <- cite_info$paper
     slides <- cite_info$slides
     
-    pdf <- ifelse(is.na(url), NA, glue::glue("<a href={url}>PDF</a>"))
+    pdf <- ifelse(is.na(paper), NA, glue::glue("<a href={paper}>PDF</a>"))
     sld <- ifelse(is.na(slides), NA, glue::glue("<a href={slides}>Slides</a>"))
     links <- c(pdf, sld)
     links <- links[which(!is.na(links))]
