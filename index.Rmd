@@ -298,6 +298,10 @@ git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "atlas-aai/ratlas",
               "wjakethompson/jayhawkdown", "wjakethompson/wjake")
 
 all_pkgs <- c(crn_pkgs, git_pkgs)
+
+# temporary
+all_pkgs[which(all_pkgs == "measr")] <- "wjakethompson/measr"
+
 pak::pak(all_pkgs, ask = FALSE)
 pkg_names <- str_replace_all(all_pkgs, "^.*\\/", "")
 my_installed <- vapply(pkg_names, check_pkg, logical(1))
