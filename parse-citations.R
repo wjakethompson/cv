@@ -107,7 +107,8 @@ cite_incollection <- function(ref_info) {
   
   editors <- ref_info %>%
     dplyr::pull(editor) %>%
-    purrr::flatten_chr()
+    purrr::flatten_chr() %>%
+    knitr::combine_words(and = "& ")
   
   ref_info %>%
     dplyr::mutate(full_author = authors,
@@ -117,11 +118,20 @@ cite_incollection <- function(ref_info) {
                                                  TRUE ~ paste0("In ", editors, " (Ed.) ")),
                   dplyr::across(where(is.character),
                                 ~stringr::str_replace_all(.x, "\\{|\\}", "")),
-                  edition = as.numeric(edition)) %>%
-    dplyr::select(full_author, year, title, full_editor, booktitle, edition, pages,
+                  edition = as.numeric(edition),
+                  ed_pages = case_when(
+                    is.na(edition) & is.na(pages) ~ NA,
+                    is.na(edition) ~ paste0("(pp. ", pages,")"),
+                    is.na(pages) ~ paste0("(", scales::ordinal(edition), " ed.)"),
+                    TRUE ~ paste0("(", scales::ordinal(edition), " ed., pp. ", pages, ")")
+                  )) %>%
+    dplyr::select(full_author, year, title, full_editor, booktitle, ed_pages,
                   publisher, doi) %>%
     glue::glue_data(
-      "{full_author} ({year}). {title}. {full_editor}*{booktitle}* ({ifelse(is.na(edition), '', paste0(scales::ordinal(edition), ' ed., '))}pp. {pages}). {publisher}. https://doi.org/{doi}"
+      "{full_author} ({year}). {title}. {full_editor}*{booktitle}*",
+      "{ifelse(is.na(ed_pages), '', paste0(' ', ed_pages))}. ",
+      "{ifelse(is.na(publisher), '', paste0(' ', publisher, '. '))}",
+      "https://doi.org/{doi}"
     )
 }
 
