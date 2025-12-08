@@ -13,7 +13,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  results = "asis", 
+  results = "asis",
   echo = FALSE,
   warning = FALSE,
   message = FALSE
@@ -100,32 +100,35 @@ Last updated on `r Sys.Date()`
 ```{r print-edu}
 edu_data <- read_xlsx("cv-data.xlsx", sheet = "education")
 
-edu <- edu_data %>% 
-  arrange(desc(end)) %>% 
-  mutate(id = 1:n()) %>% 
+edu <- edu_data %>%
+  arrange(desc(end)) %>%
+  mutate(id = 1:n()) %>%
   pivot_longer(
     starts_with('description'),
     names_to = 'description_num',
     values_to = 'description',
     values_drop_na = TRUE
-  ) %>% 
-  group_by(id) %>% 
+  ) %>%
+  group_by(id) %>%
   mutate(
     descriptions = list(description)
-  ) %>% 
-  ungroup() %>% 
-  filter(description_num == 'description_1') %>% 
+  ) %>%
+  ungroup() %>%
+  filter(description_num == 'description_1') %>%
   mutate(
     timeline = ifelse(
       is.na(start) | start == end,
       end,
       glue('{end} - {start}')
     ),
-    description_bullets = map_chr(descriptions, ~paste('-', ., collapse = '\n')),
-  ) %>% 
+    description_bullets = map_chr(
+      descriptions,
+      ~ paste('-', ., collapse = '\n')
+    ),
+  ) %>%
   mutate(across(everything(), \(x) ifelse(is.na(x), 'N/A', x)))
 
-edu |> 
+edu |>
   glue_data(
     "### {title}",
     "\n\n",
@@ -149,44 +152,70 @@ emp_data %>%
   replace_na(list(end = "present")) %>%
   # mutate_at(vars(start, end), str_replace_all, pattern = "-[0-9]*$", "") %>%
   nest(data = -c(org, institution, loc)) %>%
-  mutate(print_data = map(data, function(x) {
-    current <- filter(x, end == "present")
-    previous <- filter(x, end != "present")
-    
-    prev_positions <- x %>%
-      select(title:end) %>%
-      separate(start, c("start_year", "start_month"), "-", convert = TRUE) %>%
-      separate(end, c("end_year", "end_month"), "-", convert = TRUE,
-               fill = "right") %>%
-      mutate(start_month = month.name[start_month],
-             end_month = map_chr(end_month, function(x) {
-               if (is.na(x)) return(NA_character_)
-               month.name[x]
-             }),
-             label = glue("{title} ({start_month} {start_year}--{end_month} {end_year})")) %>%
-      pull(label) %>%
-      str_replace_all("NA ", "") %>%
-      as.character() %>%
-      list()
-    
-    current %>%
-      pivot_longer(contains("description"), names_to = "description_num",
-                   values_to = "description") %>%
-      filter(!is.na(description)) %>%
-      group_by(title) %>%
-      mutate(descriptions = list(description)) %>%
-      ungroup() %>%
-      filter(description_num == "description_1") %>%
-      mutate(full_start = min(x$start)) %>%
-      separate(full_start, c("start_year", "start_month"), convert = TRUE) %>%
-      mutate(timeline = glue("{end} - {month.name[start_month]} {start_year}"),
-             timeline = as.character(timeline),
-             description_bullets = map_chr(descriptions, ~paste("-", .x, collapse = "\n")),
-             prev_pos = ifelse(nrow(previous) == 0, NA_character_,
-                               paste("#### Position History\n\n",
-                                     map_chr(prev_positions, ~paste("-", .x, collapse = "\n"))))) %>%
-      select(title, timeline, description_bullets, prev_pos)
-  })) %>%
+  mutate(
+    print_data = map(data, function(x) {
+      current <- filter(x, end == "present")
+      previous <- filter(x, end != "present")
+
+      prev_positions <- x %>%
+        select(title:end) %>%
+        separate(start, c("start_year", "start_month"), "-", convert = TRUE) %>%
+        separate(
+          end,
+          c("end_year", "end_month"),
+          "-",
+          convert = TRUE,
+          fill = "right"
+        ) %>%
+        mutate(
+          start_month = month.name[start_month],
+          end_month = map_chr(end_month, function(x) {
+            if (is.na(x)) {
+              return(NA_character_)
+            }
+            month.name[x]
+          }),
+          label = glue(
+            "{title} ({start_month} {start_year}--{end_month} {end_year})"
+          )
+        ) %>%
+        pull(label) %>%
+        str_replace_all("NA ", "") %>%
+        as.character() %>%
+        list()
+
+      current %>%
+        pivot_longer(
+          contains("description"),
+          names_to = "description_num",
+          values_to = "description"
+        ) %>%
+        filter(!is.na(description)) %>%
+        group_by(title) %>%
+        mutate(descriptions = list(description)) %>%
+        ungroup() %>%
+        filter(description_num == "description_1") %>%
+        mutate(full_start = min(x$start)) %>%
+        separate(full_start, c("start_year", "start_month"), convert = TRUE) %>%
+        mutate(
+          timeline = glue("{end} - {month.name[start_month]} {start_year}"),
+          timeline = as.character(timeline),
+          description_bullets = map_chr(
+            descriptions,
+            ~ paste("-", .x, collapse = "\n")
+          ),
+          prev_pos = ifelse(
+            nrow(previous) == 0,
+            NA_character_,
+            paste(
+              "#### Position History\n\n",
+              map_chr(prev_positions, ~ paste("-", .x, collapse = "\n"))
+            )
+          )
+        ) %>%
+        select(title, timeline, description_bullets, prev_pos)
+    })
+  ) %>%
   select(-data) %>%
   unnest(cols = c(print_data)) %>%
   glue_data(
@@ -209,10 +238,12 @@ emp_data %>%
 
 ```{r print-pub}
 format_bib("bib/pubs.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
+  mutate(
+    across(where(is.character), ~ str_replace_all(.x, "\\{|\\}", "")),
+    author = map_chr(author, all_authors),
+    year = as.integer(year),
+    month = as.integer(month)
+  ) %>%
   arrange(desc(year), desc(month), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
@@ -234,10 +265,12 @@ format_bib("bib/pubs.bib") %>%
 
 ```{r print-tech}
 format_bib("bib/tech.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
+  mutate(
+    across(where(is.character), ~ str_replace_all(.x, "\\{|\\}", "")),
+    author = map_chr(author, all_authors),
+    year = as.integer(year),
+    month = as.integer(month)
+  ) %>%
   arrange(desc(year), desc(month), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
@@ -259,12 +292,19 @@ format_bib("bib/tech.bib") %>%
 
 ```{r print-conf}
 format_bib("bib/conf.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day", NA, NA, "end_day"),
-           fill = "right", extra = "drop", convert = TRUE) %>%
+  mutate(
+    across(where(is.character), ~ str_replace_all(.x, "\\{|\\}", "")),
+    author = map_chr(author, all_authors),
+    year = as.integer(year),
+    month = as.integer(month)
+  ) %>%
+  separate(
+    eventdate,
+    c("year", "month", "day", NA, NA, "end_day"),
+    fill = "right",
+    extra = "drop",
+    convert = TRUE
+  ) %>%
   arrange(desc(year), desc(month), desc(day), desc(end_day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
@@ -290,17 +330,17 @@ check_pkg <- function(x) {
 }
 
 db <- tools::CRAN_package_db()
-crn_pkgs <- db |> 
-  as_tibble() |> 
+crn_pkgs <- db |>
+  as_tibble() |>
   filter(str_detect(Author, "0000-0001-7339-0300")) |>
   pull(Package)
-git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm",
-              "wjakethompson/jayhawkdown", "wjakethompson/wjake")
+git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/wjake")
 
 all_pkgs <- c(crn_pkgs, git_pkgs)
 
 # temporary
 all_pkgs[which(all_pkgs == "measr")] <- "wjakethompson/measr"
+
 
 pak::pak(all_pkgs, ask = FALSE)
 pkg_names <- str_replace_all(all_pkgs, "^.*\\/", "")
@@ -309,9 +349,11 @@ my_installed <- vapply(pkg_names, check_pkg, logical(1))
 
 ```{r print-rpkg}
 if (all(my_installed)) {
-  if (file.exists("bib/rpkg.bib")) unlink("bib/rpkg.bib")
+  if (file.exists("bib/rpkg.bib")) {
+    unlink("bib/rpkg.bib")
+  }
   file.create("bib/rpkg.bib")
-  
+
   wjake::write_pkg_bib(pkg = all_pkgs, file = "bib/rpkg.bib")
 } else {
   stop("Not all packages installed", call. = FALSE)
@@ -322,15 +364,19 @@ read_lines("bib/rpkg.bib") %>%
   write_lines("bib/rpkg.bib")
 
 format_bib("bib/rpkg.bib") %>%
-  mutate(author = map_chr(author, all_authors, last_first = FALSE),
-         year = as.integer(year),
-         date = lubridate::ymd(date)) %>%
+  mutate(
+    author = map_chr(author, all_authors, last_first = FALSE),
+    year = as.integer(year),
+    date = lubridate::ymd(date)
+  ) %>%
   arrange(desc(date), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
   ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         title = map_chr(title, format_pkg_title)) %>%
+  mutate(
+    year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
+    title = map_chr(title, format_pkg_title)
+  ) %>%
   glue_data(
     "### {title}",
     "\n\n",
@@ -347,11 +393,18 @@ format_bib("bib/rpkg.bib") %>%
 
 ```{r print-work}
 format_bib("bib/work.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
+  mutate(
+    across(where(is.character), ~ str_replace_all(.x, "\\{|\\}", "")),
+    author = map_chr(author, all_authors),
+    year = as.integer(year),
+    month = as.integer(month)
+  ) %>%
+  separate(
+    eventdate,
+    c("year", "month", "day"),
+    extra = "drop",
+    convert = TRUE
+  ) %>%
   arrange(desc(year), desc(month), desc(day), author) %>%
   group_by(year) %>%
   mutate(count = 1:n()) %>%
@@ -380,41 +433,65 @@ gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants") %>%
 awards <- awd_data %>%
   filter(display) %>%
   arrange(desc(start_date), award) %>%
-  mutate(date = case_when(is.na(end_date) ~ as.character(start_date),
-                          TRUE ~ paste0(start_date, "--", end_date)),
-         display_text = glue("- {award} ({date})"),
-         status = "Professional Awards") %>%
+  mutate(
+    date = case_when(
+      is.na(end_date) ~ as.character(start_date),
+      TRUE ~ paste0(start_date, "--", end_date)
+    ),
+    display_text = glue("- {award} ({date})"),
+    status = "Professional Awards"
+  ) %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
 
 grants <- gnt_data %>%
-  mutate(display_text = glue("- **{role}:** *{title}*{ifelse(is.na(start), '', paste0(' (', start, '--', end, ')'))}. {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
-  mutate(role = factor(role,
-                       levels = c("Principal Investigator",
-                                  "Co-Principal Investigator",
-                                  "Investigator", "Co-Investigator",
-                                  "Advisor",
-                                  "Other Personnel (Psychometrician)")),
-         status = factor(status,
-                         levels = c("Currently Funded", "Previously Funded",
-                                    "Pending", "Unfunded"))) |> 
+  mutate(
+    display_text = glue(
+      "- **{role}:** *{title}*{ifelse(is.na(start), '', paste0(' (', start, '--', end, ')'))}. {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}"
+    )
+  ) %>%
+  mutate(
+    role = factor(
+      role,
+      levels = c(
+        "Principal Investigator",
+        "Co-Principal Investigator",
+        "Investigator",
+        "Co-Investigator",
+        "Advisor",
+        "Other Personnel (Psychometrician)"
+      )
+    ),
+    status = factor(
+      status,
+      levels = c("Currently Funded", "Previously Funded", "Pending", "Unfunded")
+    )
+  ) |>
   arrange(status, role, desc(start)) %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
 
 
 bind_rows(grants, awards) %>%
-  mutate(status = factor(status,
-                         levels = c("Currently Funded",
-                                    "Under Review",
-                                    "Previously Funded",
-                                    "Unfunded",
-                                    "Professional Awards"),
-                         labels = c("Currently Funded Projects",
-                                    "Projects Under Review",
-                                    "Previously Funded Projects",
-                                    "Unfunded Projects",
-                                    "Professional Awards"))) %>%
+  mutate(
+    status = factor(
+      status,
+      levels = c(
+        "Currently Funded",
+        "Under Review",
+        "Previously Funded",
+        "Unfunded",
+        "Professional Awards"
+      ),
+      labels = c(
+        "Currently Funded Projects",
+        "Projects Under Review",
+        "Previously Funded Projects",
+        "Unfunded Projects",
+        "Professional Awards"
+      )
+    )
+  ) %>%
   arrange(status) %>%
   glue_data(
     "### {status}",
