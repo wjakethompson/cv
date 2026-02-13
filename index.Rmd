@@ -527,13 +527,14 @@ N/A
 
 ### Reviewer
 
--   Behaviormetrika (2019--present)
--   International Journal of Research in Education and Science (2019--present)
--   Journal of Educational and Behavioral Statistics (2023--present)
--   Journal of Educational Measurement (2023--present)
--   Journal of Open Source Software (2019--present)
--   Psych (2023--present)
--   National Council on Measurement in Education annual meeting (2019--present)
--   American Educational Research Association, Division H, Outstanding Publications (2019)
+-   Behaviormetrika
+-   Educational Measurement: Issues and Practice
+-   International Journal of Research in Education and Science
+-   Journal of Educational and Behavioral Statistics
+-   Journal of Educational Measurement
+-   Journal of Open Source Software
+-   Psych
+-   National Council on Measurement in Education annual meeting
+-   American Educational Research Association, Division H, Outstanding Publications
 
 N/A
