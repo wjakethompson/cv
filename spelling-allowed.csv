@@ -15,6 +15,7 @@ Behaviormetrika
 Beitling
 bookdown
 Brussow
+Bulut
 Burda
 Burnes
 Chrysikou
@@ -23,6 +24,9 @@ COQ
 COVID
 Denney
 dcm
+dcm’
+dcmdata
+dcmstan
 DIF
 DLM
 dlmr
@@ -42,12 +46,14 @@ ggplot
 github
 gmail
 Gorby
+Harring
 Hirt
 Hoglund
 hqjct
 http
 https
 hypercholesterolemia
+IAFOR
 implementational
 instructionally
 Instructionally
@@ -71,6 +77,8 @@ lipoprotein
 ly
 Majerus
 measr
+Molenaar
+Moustaki
 ncme
 nd
 netlify
@@ -81,6 +89,7 @@ pagedown
 Petersburg
 Ph
 Pitavastatin
+Plinio
 poststratification
 Preprint
 ProQuest
@@ -92,7 +101,9 @@ Psychometrics
 Psychonomic
 Ramey
 ratlas
+rdcmchecks
 Reconceptualizing
+rgtk
 ridgeline
 rosuvastatin
 rstandlm
@@ -119,6 +130,7 @@ Supica
 taylor
 TDCMs
 tdcmStan
+th
 tidyds
 Tidymodels
 Tidyverse
@@ -131,6 +143,7 @@ Unipolar
 useR
 Vickers
 vke
+Wallin
 Wehmeyer
 Whitcomb
 wjake
