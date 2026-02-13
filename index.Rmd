@@ -339,7 +339,7 @@ git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/wjake")
 all_pkgs <- c(crn_pkgs, git_pkgs)
 
 # temporary
-all_pkgs[which(all_pkgs == "measr")] <- "wjakethompson/measr"
+# all_pkgs[which(all_pkgs == "measr")] <- "wjakethompson/measr"
 
 
 pak::pak(all_pkgs, ask = FALSE)
