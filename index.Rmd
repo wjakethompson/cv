@@ -334,7 +334,7 @@ crn_pkgs <- db |>
   as_tibble() |>
   filter(str_detect(Author, "0000-0001-7339-0300")) |>
   pull(Package)
-git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm", "wjakethompson/wjake")
+git_pkgs <- c("atlas-aai/dlmr", "atlas-aai/rstandlm")
 
 all_pkgs <- c(crn_pkgs, git_pkgs)
 

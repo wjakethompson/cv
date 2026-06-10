@@ -261,15 +261,21 @@ cite_manual <- function(ref_info) {
     purrr::flatten_chr() %>%
     all_authors(last_first = FALSE)
   
-  new_info <- ref_info %>%
+  cite_info <- ref_info %>%
     dplyr::mutate(full_author = authors,
                   title = purrr::map_chr(title, format_pkg_title),
                   publisher = purrr::map_chr(publisher, format_pkg_title),
                   publisher = str_to_title(publisher),
                   note = purrr::map_chr(note, format_pkg_title),
                   note = str_to_title(note))
+  
+  missing_cols <- setdiff(c("url"), colnames(cite_info))
+  for (i in seq_along(missing_cols)) {
+    cite_info <- cite_info %>%
+      dplyr::mutate(!!missing_cols[i] := NA_character_)
+  }
 
-  new_info %>%
+  cite_info %>%
     select(full_author, year, title, version, type, publisher, doi, url, note) %>%
     glue::glue_data(
       "{full_author} ({year}). *{title}* ({version}) [{type}].{ifelse(is.na(publisher), '', glue(' {publisher}.'))} {ifelse(!is.na(doi), glue('https://doi.org/{doi}'), ifelse(!is.na(url), glue('{url}'), glue('{note}.')))}"
